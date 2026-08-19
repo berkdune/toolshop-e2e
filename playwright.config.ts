@@ -22,7 +22,16 @@ export default defineConfig({
       testDir: './tests/ui',
       // Sabit gerçek UA: demo'nun WAF'ı datacenter IP + "HeadlessChrome" UA
       // kombinasyonunda tarayıcının API çağrılarını engelliyor (CI'da görüldü).
-      use: { ...devices['Desktop Chrome'], userAgent: appConfig.browserUA, locale: 'en-US' },
+      // SLOW_MO: demo/izleme koşuları için aksiyonlar arası bekleme (ms), örn:
+      //   SLOW_MO=150 npx playwright test --headed --workers=1
+      use: {
+        ...devices['Desktop Chrome'],
+        userAgent: appConfig.browserUA,
+        locale: 'en-US',
+        launchOptions: { slowMo: Number(process.env.SLOW_MO ?? 0) },
+        // VIDEO=on: demo kaydı almak için (örn. tanıtım videosu üretimi)
+        video: process.env.VIDEO === 'on' ? 'on' : 'off',
+      },
     },
     { name: 'api', testDir: './tests/api' },
   ],
