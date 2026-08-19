@@ -13,7 +13,7 @@ The project follows a test-case-first QA workflow: the application was explored 
 
 ## Highlights
 
-- **Case-first design with traceability** — every automated test carries its `TC-xxx` id in the title; [`docs/TRACEABILITY.md`](docs/TRACEABILITY.md) is generated from the specs by `npm run cases:lint`, mapping all 122 cases to their spec files.
+- **Case-first design with traceability** — every automated test carries its `TC-xxx` id in the title; [`docs/TRACEABILITY.md`](docs/TRACEABILITY.md) is generated from the specs by `npm run cases:lint`, mapping all 128 cases to their spec files.
 - **Hybrid UI + API strategy** — critical journeys are exercised through the UI; test data (users, carts, orders) is provisioned and cleaned up through the REST API. Login uses token injection instead of repeated UI sign-ins.
 - **Real findings** — automating the suite surfaced genuine defects in the target app (see below), each annotated in the corresponding test.
 - **Built for a hostile environment** — the target is a *shared, hourly-reset* public demo. The suite survives concurrent strangers, vanishing stock, and mid-run database resets.
@@ -44,7 +44,7 @@ npm test               # full suite (~4 min)
 | `npm test` | Full suite: UI (chromium) + API projects |
 | `npm run test:smoke` | 14 critical-path smoke tests (~20 s) |
 | `npm run test:ui` / `test:api` | One project only |
-| `npm run cases:lint` | Validates the 122-case CSV suite and regenerates `TRACEABILITY.md` |
+| `npm run cases:lint` | Validates the 128-case CSV suite and regenerates `TRACEABILITY.md` |
 | `npm run report` | Opens the last HTML report |
 
 No configuration needed — defaults target the public demo. Override via `.env` (see `.env.example`).
@@ -56,7 +56,7 @@ No configuration needed — defaults target the public demo. Override via `.env`
 │   ├── TEST_PLAN.md          # strategy, scope, phases (Turkish)
 │   ├── EXPLORATION.md        # reconnaissance notes & findings (Turkish)
 │   ├── TRACEABILITY.md       # generated: TC ↔ spec mapping
-│   └── cases/                # 122 manual cases, Xray-importable CSV (English)
+│   └── cases/                # 128 manual cases, Xray-importable CSV (English)
 ├── src/
 │   ├── pages/                # Page Objects (data-test–first selectors)
 │   ├── fixtures/fixtures.ts  # testUser (API-provisioned + auto-cleanup), stockProduct, api
