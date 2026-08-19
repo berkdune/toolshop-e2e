@@ -22,6 +22,7 @@ env:
   # 127.0.0.1: runner'da localhost ::1'e çözülüp Docker'ın IPv4 port yayınını ıskalayabiliyor
   BASE_URL: http://127.0.0.1:4200
   API_URL: http://127.0.0.1:8091
+  DISABLE_LOGGING: 'true'
 
 jobs:
   smoke:
@@ -35,6 +36,9 @@ jobs:
         with:
           repository: testsmith-io/practice-software-testing
           path: sut
+      # Upstream'in web (nginx) imajı yalnız arm64 yayınlanmış — x86_64 runner'da
+      # "exec format error" ile çakılıyor; QEMU emülasyonu bunu şeffaf çözer.
+      - uses: docker/setup-qemu-action@v3
       - name: Start the application (prebuilt images)
         working-directory: sut
         run: docker compose -f docker-compose.prod.yml up --pull missing -d
@@ -97,6 +101,9 @@ jobs:
         with:
           repository: testsmith-io/practice-software-testing
           path: sut
+      # Upstream'in web (nginx) imajı yalnız arm64 yayınlanmış — x86_64 runner'da
+      # "exec format error" ile çakılıyor; QEMU emülasyonu bunu şeffaf çözer.
+      - uses: docker/setup-qemu-action@v3
       - name: Start the application (prebuilt images)
         working-directory: sut
         run: docker compose -f docker-compose.prod.yml up --pull missing -d
