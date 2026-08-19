@@ -1,0 +1,22 @@
+test_id,case_name,case_description,test_type,priority,labels,labels,labels,step_number,step_action,expected_result
+TC-034,Toolshop - Product Detail - Content - Product page displays complete information,"Verify that the product page shows name, price, description, chips, CO2 badge, specifications and related products.",Manual,Highest,Smoke,UI,Positive,1,"From the home page, open a product (e.g. Combination Pliers).","Product detail page displays the name, price, description, category and brand chips, and the CO2 rating badge."
+,,,,,,,,2,Scroll down the page.,"A Specifications table with rows and a ""Related products"" section are displayed."
+TC-035,Toolshop - Product Detail - Cart - Add to cart updates the cart badge,Verify that adding a product to the cart is confirmed and reflected in the navigation badge.,Manual,Highest,Smoke,UI,Positive,1,Open a product detail page.,"Quantity stepper and ""Add to cart"" button are displayed."
+,,,,,,,,2,"Click the ""Add to cart"" button.",A success indication is shown and the cart icon badge in the navigation displays 1.
+TC-036,Toolshop - Product Detail - Quantity - Stepper changes quantity within valid bounds,Verify that the quantity stepper increases and decreases correctly and never goes below 1.,Manual,High,Regression,UI,Positive,1,Open a product detail page.,Quantity shows 1 by default.
+,,,,,,,,2,Click the increase (+) button twice.,Quantity shows 3.
+,,,,,,,,3,Click the decrease (-) button once.,Quantity shows 2.
+,,,,,,,,4,Click the decrease (-) button repeatedly.,Quantity does not go below 1.
+TC-037,Toolshop - Product Detail - Cart - Selected quantity is carried into the cart line,Verify that the quantity chosen on the product page is used for the cart line and pricing.,Manual,Medium,Regression,UI,Positive,1,"On a product detail page, set the quantity to 3 and click ""Add to cart"".",Cart badge shows 3.
+,,,,,,,,2,Open the cart (checkout step 1).,The cart line shows quantity 3 and the line price equals 3 x unit price.
+TC-038,Toolshop - Product Detail - Favorites - Guest cannot add favorites,Verify that adding to favorites requires authentication.,Manual,High,Regression,UI,Negative,1,"Without logging in, open a product detail page.","""Add to favourites"" button is displayed."
+,,,,,,,,2,"Click ""Add to favourites"".",The product is not added; the user is informed that signing in is required (unauthorized message).
+TC-039,Toolshop - Product Detail - Favorites - Logged-in customer adds a product to favorites,Verify that a customer can favorite a product and see it in the account favorites list.,Manual,High,Regression,UI,Positive,1,Log in as a customer and open a product detail page.,Product page is displayed.
+,,,,,,,,2,"Click ""Add to favourites"".",A success indication is shown.
+,,,,,,,,3,Navigate to Account > Favorites.,The product is listed among the favorites.
+TC-040,Toolshop - Product Detail - Stock - Out-of-stock product cannot be added to the cart,Verify that a sold-out product cannot be purchased from its detail page.,Manual,High,Regression,UI,Negative,1,Open the detail page of an out-of-stock product.,"""Out of stock"" is indicated and adding to cart is not possible (button disabled or hidden)."
+TC-041,Toolshop - Product Detail - Content - Specification rows show name value and unit,Verify that the specifications table renders values with their units.,Manual,Medium,Regression,UI,Positive,1,Open a product detail page with specifications (e.g. Combination Pliers).,"Specification rows display name/value pairs with units where applicable (e.g. Handle Material: Bi-component, Length: 200 mm)."
+TC-042,Toolshop - Product Detail - Navigation - Related products open their own detail pages,Verify that related product links navigate to the correct product.,Manual,Medium,Regression,UI,Positive,1,Open a product detail page.,Related products section lists other products.
+,,,,,,,,2,Click one of the related products.,The clicked product's detail page opens (name and URL change accordingly).
+TC-043,Toolshop - Product Detail - Rentals - Rental product page shows rental-specific presentation,Verify that rental products open with the rental-specific layout.,Manual,Medium,Regression,UI,Positive,1,Navigate to https://practicesoftwaretesting.com/rentals.,Rental products are listed.
+,,,,,,,,2,Open the first rental product.,"The detail page shows name, price and CO2 badge with add to cart/favourites/compare actions; the standard quantity stepper is not present (rental-specific layout)."

@@ -1,0 +1,24 @@
+test_id,case_name,case_description,test_type,priority,labels,labels,labels,step_number,step_action,expected_result
+TC-067,Toolshop - Account - Overview - Account page shows section navigation,Verify that the account overview links to all account sections.,Manual,High,Regression,UI,Positive,1,Log in as a customer and navigate to https://practicesoftwaretesting.com/account.,"My account page displays navigation to Favorites, Profile, Invoices and Messages."
+TC-068,Toolshop - Account - Profile - Updating profile fields persists,Verify that profile edits are saved and survive a reload.,Manual,High,Regression,UI,Positive,1,Log in and open Account > Profile.,Profile form is displayed with the current values.
+,,,,,,,,2,"Change the phone and street values and click ""Update Profile"".",A success indication is shown.
+,,,,,,,,3,Reload the profile page.,The updated values are displayed.
+TC-069,Toolshop - Account - Profile - Required-field validation on update,Verify that clearing a mandatory profile field blocks saving.,Manual,High,Regression,UI,Negative,1,Log in and open the profile page.,Profile form is displayed.
+,,,,,,,,2,"Clear a required field (e.g. first name) and click ""Update Profile"".",A validation message is displayed and the profile is not saved with the empty value.
+TC-070,Toolshop - Account - Password - Customer changes the password and logs in with the new one,Verify the change-password flow end to end including old-password invalidation.,Manual,High,Regression,UI,Positive,1,"Create a fresh user via the API, log in and open the profile page.",Password section shows current/new/confirm fields.
+,,,,,,,,2,"Fill the current password and a valid new password (twice), then submit.",A success indication is shown.
+,,,,,,,,3,Log out and log in with the NEW password.,Login succeeds.
+,,,,,,,,4,Log out and try to log in with the OLD password.,Login is rejected with the generic error.
+TC-071,Toolshop - Account - Password - Wrong current password is rejected,Verify that the password cannot be changed without knowing the current one.,Manual,Medium,Regression,UI,Negative,1,Log in and open the password section on the profile page.,Password fields are displayed.
+,,,,,,,,2,"Enter a wrong current password with a valid new password, then submit.",An error is displayed and the password is not changed.
+TC-072,Toolshop - Account - Favorites - Favorite can be removed from the favorites page,Verify that deleting a favorite removes it permanently.,Manual,High,Regression,UI,Positive,1,Log in and add a product to favorites from its detail page.,A success indication is shown.
+,,,,,,,,2,Open Account > Favorites.,The product is listed.
+,,,,,,,,3,Click the delete button on the favorite.,The product disappears from the list and does not reappear after a reload.
+TC-073,Toolshop - Account - Invoices - Invoice PDF can be downloaded after async generation,Verify the asynchronous invoice PDF download flow.,Manual,Medium,Regression,UI,Positive,1,Complete an order and open Account > Invoices.,The invoice row is listed.
+,,,,,,,,2,Open the invoice and request the PDF download.,The download becomes available once processing finishes (async status) and a PDF file is received.
+TC-074,Toolshop - Account - Messages - Contact messages sent while logged in are listed in the account,Verify that account messages reflect submitted contact forms.,Manual,Medium,Regression,UI,Positive,1,Log in and send a valid contact message from the Contact page.,A success indication is shown.
+,,,,,,,,2,Open Account > Messages.,The sent message is listed with its subject and status.
+TC-075,Toolshop - Account - Security - TOTP two-factor setup is available on the profile,Verify that the profile offers TOTP 2FA setup and accepts a valid code.,Manual,Medium,Regression,UI,Positive,1,Log in and open Account > Profile.,"The ""Set up Two-Factor Authentication"" section displays a TOTP secret and a code field."
+,,,,,,,,2,"Generate a TOTP code from the displayed secret (authenticator app or library), enter it and click Verify.",2FA is enabled for the account (verification succeeds).
+TC-076,Toolshop - Account - Session - Expired session redirects to login,Verify that account pages require re-authentication after the token expires (~5 minutes).,Manual,Medium,Regression,UI,Edge,1,Log in as a customer.,My account page is displayed.
+,,,,,,,,2,Wait for the access token to expire (about 5 minutes of inactivity) and open an account page.,"The session is dropped: the user is taken away from the account page and the navigation shows ""Sign in"" again (re-authentication required)."

@@ -1,0 +1,42 @@
+test_id,case_name,case_description,test_type,priority,labels,labels,labels,step_number,step_action,expected_result
+TC-052,Toolshop - Checkout - Order - Registered customer completes an order with Cash on Delivery,"Verify the full happy-path purchase: cart, sign in, billing address and Cash on Delivery payment.",Manual,Highest,Smoke,UI,Positive,1,Create a fresh customer via the API and add a product to the cart.,Cart badge shows 1.
+,,,,,,,,2,"On the checkout page, click Proceed on the cart step.",Sign-in step is displayed.
+,,,,,,,,3,Log in with the created customer's credentials and proceed.,Billing Address step is displayed with the profile address fields prefilled.
+,,,,,,,,4,Fill any missing field (e.g. house number) and proceed.,Payment step is displayed with the payment method dropdown.
+,,,,,,,,5,"Select ""Cash on Delivery"" and click Confirm.","""Payment was successful"" message is displayed."
+,,,,,,,,6,Click Confirm once more.,The order is placed: the invoice request is sent (HTTP 201) and the checkout resets.
+TC-053,Toolshop - Checkout - Billing - Address fields are prefilled from the profile,Verify that the billing step reuses the saved profile address.,Manual,High,Regression,UI,Positive,1,"Log in with an account that has a saved address, add a product and reach the Billing Address step.","Street, city, state, country and postcode fields are prefilled from the profile."
+TC-054,Toolshop - Checkout - Billing - Proceed stays disabled until the billing form is complete,Verify that the Proceed button on the billing step is disabled while required fields (including house number) are empty. Note: the API accepts registrations without a house number; this UI requirement is a known inconsistency to watch.,Manual,High,Regression,UI,Negative,1,Reach the Billing Address step with a customer whose profile has no house number.,House number field is empty.
+,,,,,,,,2,Observe the Proceed button without filling the field.,Proceed button is disabled.
+,,,,,,,,3,Fill the house number field.,Proceed button becomes enabled.
+TC-055,Toolshop - Checkout - Payment - Bank Transfer requires bank fields and completes,Verify that Bank Transfer reveals its fields and completes the order with valid values.,Manual,High,Regression,UI,Positive,1,Reach the Payment step with a valid cart and billing address.,Payment method dropdown is displayed.
+,,,,,,,,2,"Select ""Bank Transfer"".","Bank name, account name and account number fields appear."
+,,,,,,,,3,Fill the bank fields with valid values and click Confirm.,"""Payment was successful"" message is displayed."
+TC-056,Toolshop - Checkout - Payment - Credit Card completes with valid data,Verify that Credit Card reveals its fields and completes the order with valid values.,Manual,High,Regression,UI,Positive,1,Reach the Payment step.,Payment method dropdown is displayed.
+,,,,,,,,2,"Select ""Credit Card"".","Credit card number, expiration date, CVV and card holder name fields appear."
+,,,,,,,,3,"Fill valid values (e.g. card number in 1111-2222-3333-4444 format, a future expiration date, a 3-digit CVV) and click Confirm.","""Payment was successful"" message is displayed."
+TC-057,Toolshop - Checkout - Payment - Credit Card rejects invalid inputs,Verify field validation of the credit card form.,Manual,High,Regression,UI,Negative,1,"Reach the Payment step and select ""Credit Card"".",Credit card fields appear.
+,,,,,,,,2,"Enter an invalid card number (e.g. ""1234""), a past expiration date and a non-numeric CVV.",Validation messages are displayed for the invalid fields.
+,,,,,,,,3,Click Confirm.,The order is not completed while the fields are invalid.
+TC-058,Toolshop - Checkout - Payment - Buy Now Pay Later with a selected installment plan,Verify that Buy Now Pay Later requires choosing an installment plan and completes.,Manual,Medium,Regression,UI,Positive,1,"Reach the Payment step and select ""Buy Now Pay Later"".",A monthly installments dropdown appears.
+,,,,,,,,2,Select an installment option and click Confirm.,"""Payment was successful"" message is displayed."
+TC-059,Toolshop - Checkout - Payment - Gift Card completes with card number and validation code,Verify that Gift Card reveals its fields and completes the order.,Manual,Medium,Regression,UI,Positive,1,"Reach the Payment step and select ""Gift Card"".",Gift card number and validation code fields appear.
+,,,,,,,,2,"Fill a 16-character gift card number and a validation code, then click Confirm.","""Payment was successful"" message is displayed."
+TC-060,Toolshop - Checkout - Payment - Confirm requires a payment method,Verify that the order cannot be completed without choosing a payment method.,Manual,High,Regression,UI,Negative,1,Reach the Payment step.,"The payment dropdown shows ""Choose your payment method""."
+,,,,,,,,2,Click Confirm without selecting a payment method.,The order is not completed; the user is prompted to choose a payment method.
+TC-061,Toolshop - Checkout - Guest - Guest completes checkout without an account,Verify that a visitor can order via the Continue as Guest flow.,Manual,Highest,Smoke,UI,Positive,1,"Without logging in, add a product to the cart and proceed from the cart step.","Sign-in step displays a ""Continue as Guest"" section with guest email, first name and last name fields."
+,,,,,,,,2,"Fill the guest fields with a unique email, first name and last name, then continue.",Billing Address step is displayed with empty fields.
+,,,,,,,,3,Fill the full billing address and proceed.,Payment step is displayed.
+,,,,,,,,4,"Select ""Cash on Delivery"" and click Confirm.","""Payment was successful"" message is displayed."
+,,,,,,,,5,Click Confirm once more.,The guest order is placed via the guest invoice endpoint (HTTP 201).
+TC-062,Toolshop - Checkout - Billing - Postcode lookup fills the address automatically,Verify the postcode lookup helper on the billing step.,Manual,Medium,Regression,UI,Positive,1,Reach the Billing Address step.,A postcode lookup hint is displayed near the postcode field.
+,,,,,,,,2,"Select a supported country, enter a valid postcode and house number, and trigger the lookup.",Street and city fields are filled automatically from the lookup result.
+TC-063,Toolshop - Checkout - Order - Completed order appears in the customer's invoices,Verify that a placed order (payment check + second Confirm) creates an invoice visible in the account.,Manual,High,Regression,UI,Positive,1,Complete an order as a registered customer including the second Confirm (as in TC-052).,The invoice request returns HTTP 201 with an invoice number.
+,,,,,,,,2,Navigate to Account > Invoices.,An invoice row for the order is listed with the invoice number (INV-...) and a total matching the cart total.
+TC-064,Toolshop - Checkout - Wizard - Returning to the cart step keeps and updates the order data,Verify that going back in the wizard retains data and recalculates after edits.,Manual,Medium,Regression,UI,Positive,1,Reach the Payment step with one product of quantity 1.,Payment step is displayed.
+,,,,,,,,2,Navigate back to the cart step within the wizard.,Cart line is still present.
+,,,,,,,,3,Change the quantity to 2 and proceed through the steps again.,Billing data is retained and the cart total reflects the updated quantity.
+TC-065,Toolshop - Checkout - Session - Cart is kept after signing in during checkout,Verify that logging in at the sign-in step does not lose the guest cart.,Manual,Medium,Regression,UI,Edge,1,"As a guest, add a product to the cart and proceed to the sign-in step.",Sign-in step is displayed.
+,,,,,,,,2,Log in with an existing customer account.,After login the wizard continues with the same cart content (line and badge unchanged).
+TC-066,Toolshop - Checkout - Wizard - Steps must be completed in order,Verify that later wizard steps are not reachable before the earlier ones are completed.,Manual,Medium,Regression,UI,Negative,1,"Add a product, then reload the /checkout page.",The wizard restarts from the cart step.
+,,,,,,,,2,Observe the step indicators before completing the earlier steps.,Later steps (billing/payment) are not active or reachable before the preceding steps are completed.

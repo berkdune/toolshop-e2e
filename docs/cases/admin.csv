@@ -1,0 +1,36 @@
+test_id,case_name,case_description,test_type,priority,labels,labels,labels,step_number,step_action,expected_result
+TC-083,Toolshop - Admin - Dashboard - Admin sees sales chart and latest orders,Verify that the admin dashboard renders the sales chart and the latest orders table.,Manual,Highest,Smoke,UI,Positive,1,Log in as the admin.,Admin dashboard is displayed.
+,,,,,,,,2,Review the dashboard content.,"""Sales over the years"" chart renders with yearly totals and the ""Latest orders"" table lists invoices with number, date, status and total."
+TC-084,Toolshop - Admin - Products - Admin creates a product,Verify that a new product created by the admin becomes visible in the admin list and on the storefront. Use unique self-created data on the shared demo.,Manual,High,Regression,UI,Positive,1,Log in as the admin and open Admin > Products.,Products list with an Add Product action is displayed.
+,,,,,,,,2,"Click Add Product, fill the form with unique valid data (name like ""E2E Test Product <timestamp>"", price, category, brand) and save.",A success indication is shown.
+,,,,,,,,3,Search for the created product name in the admin products list.,The new product is listed.
+,,,,,,,,4,Search for the product on the storefront.,The product is visible to customers.
+TC-085,Toolshop - Admin - Products - Admin edits a product,Verify that product edits persist in the admin list and on the storefront.,Manual,High,Regression,UI,Positive,1,"As admin, create a test product (as in TC-084).",Product exists.
+,,,,,,,,2,"Open the product's Edit page, change its name and price, and save.",A success indication is shown.
+,,,,,,,,3,Re-open the product in the admin list and on the storefront.,The updated name and price are displayed in both places.
+TC-086,Toolshop - Admin - Products - Admin deletes a product,Verify that a deleted product disappears from the admin list and the storefront.,Manual,High,Regression,UI,Positive,1,"As admin, create a test product.",Product exists.
+,,,,,,,,2,Click the delete button of the created product in the admin list.,The product disappears from the list.
+,,,,,,,,3,Search for the product name on the storefront.,The product is no longer available.
+TC-087,Toolshop - Admin - Products - Admin product search filters the list,Verify the admin product search and reset.,Manual,Medium,Regression,UI,Positive,1,Open Admin > Products.,Product list is displayed.
+,,,,,,,,2,"Search for a known product name (e.g. ""Pliers"").",Only matching products remain in the list; resetting the search restores the full list.
+TC-088,Toolshop - Admin - Brands - Admin manages a brand end to end,"Verify brand create, edit and delete with self-created data.",Manual,High,Regression,UI,Positive,1,"Open Admin > Brands and create a brand with a unique name (e.g. ""E2E Brand <timestamp>"").",The brand appears in the list.
+,,,,,,,,2,Edit the brand and change its name.,The updated name is listed.
+,,,,,,,,3,Delete the brand.,The brand disappears from the list.
+TC-089,Toolshop - Admin - Categories - Admin manages a category end to end,"Verify category create, edit and delete with self-created data.",Manual,High,Regression,UI,Positive,1,"Open Admin > Categories and create a category with a unique name (e.g. ""E2E Category <timestamp>"").",The category appears in the list.
+,,,,,,,,2,Edit the category and change its name.,The updated name is listed.
+,,,,,,,,3,Delete the category.,The category disappears from the list.
+TC-090,Toolshop - Admin - Users - Admin creates a user who can log in,Verify that a user created from the admin panel can authenticate.,Manual,High,Regression,UI,Positive,1,"Open Admin > Users, click Add User and fill valid unique data.",The user appears in the users list.
+,,,,,,,,2,Log in with the created user's credentials in another session.,Login succeeds as a customer.
+TC-091,Toolshop - Admin - Users - Admin edits a user,Verify that admin edits to a user persist.,Manual,Medium,Regression,UI,Positive,1,"As admin, open the Edit page of a test-created user.",Edit form displays the current values.
+,,,,,,,,2,Change the first name and save.,The updated name is shown in the users list.
+TC-092,Toolshop - Admin - Users - Admin deletes a user without related records,Verify that a user with no orders can be deleted and can no longer log in.,Manual,High,Regression,UI,Positive,1,"Create a fresh user via the API (no orders), then open Admin > Users and search for it.",The user is listed.
+,,,,,,,,2,Click the delete button for that user.,The user disappears from the list.
+,,,,,,,,3,Attempt to log in with the deleted user's credentials.,Login is rejected.
+TC-093,Toolshop - Admin - Orders - Admin updates an order status,Verify that the admin can change an order's status.,Manual,Medium,Regression,UI,Positive,1,"Complete an order as a customer, then as admin open the order from the orders list.",The invoice is listed with its current status.
+,,,,,,,,2,"Edit the order and change its status (e.g. to COMPLETED).",The new status is saved and displayed in the list.
+TC-094,Toolshop - Admin - Messages - Admin replies to a contact message,Verify the admin reply flow for contact messages.,Manual,Medium,Regression,UI,Positive,1,"Send a contact message as a customer, then as admin open Admin > Messages.",The message is listed.
+,,,,,,,,2,Open the message and send a reply.,The reply is saved; the customer sees the reply under Account > Messages.
+TC-095,Toolshop - Admin - Statistics - Admin statistics pages render report data,Verify that the statistics pages load their reports without errors.,Manual,Medium,Regression,UI,Positive,1,"As admin, open the Statistics pages (average sales per month / per week).",Report charts/tables render with data and no errors.
+TC-096,Toolshop - Admin - Validation - Product form rejects invalid input,Verify required-field and price validation on the product form.,Manual,High,Regression,UI,Negative,1,"As admin, open Add Product and submit the form empty.",A validation message is displayed for each required field.
+,,,,,,,,2,"Fill the form but enter an invalid price (e.g. negative or non-numeric).",A price validation error is displayed and the product is not created.
+TC-097,Toolshop - Admin - Integrity - Brand or category in use cannot be deleted,Verify referential integrity when deleting a brand that still has products.,Manual,Medium,Regression,UI,Edge,1,"As admin, attempt to delete a brand that has products (e.g. ForgeFlex Tools).",Deletion is rejected with a conflict/in-use error and the brand remains listed.

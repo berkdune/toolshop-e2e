@@ -1,0 +1,41 @@
+test_id,case_name,case_description,test_type,priority,labels,labels,labels,step_number,step_action,expected_result
+TC-016,Toolshop - Product Discovery - Listing - Home page shows the product grid with core information,"Verify that the home page lists products with name, price and CO2 rating and shows pagination.",Manual,Highest,Smoke,UI,Positive,1,Navigate to https://practicesoftwaretesting.com.,"Product grid is displayed; each product card shows the product name, price and a CO2 rating badge (A-E)."
+,,,,,,,,2,Scroll to the bottom of the listing.,Pagination controls are displayed below the grid.
+TC-017,Toolshop - Product Discovery - Search - Search returns products matching the term,Verify that searching by a keyword returns only related products with a result caption and count.,Manual,Highest,Smoke,UI,Positive,1,Navigate to the home page.,Product grid is displayed.
+,,,,,,,,2,"Enter ""pliers"" into the search field and click the Search button.","""Searched for: pliers"" caption and a result count are displayed; all returned product names are related to pliers (e.g. Combination Pliers, Long Nose Pliers)."
+TC-018,Toolshop - Product Discovery - Search - No results state for an unmatched term,Verify that a term with no matches shows a clear zero-result state instead of an error.,Manual,High,Regression,UI,Negative,1,Navigate to the home page.,Product grid is displayed.
+,,,,,,,,2,"Enter ""qwertyxyz123"" into the search field and click the Search button.",No products are listed and the UI clearly indicates zero results; no error page appears.
+TC-019,Toolshop - Product Discovery - Search - Reset clears the search and restores the full listing,Verify that the search reset button clears the term and restores the default grid.,Manual,Medium,Regression,UI,Positive,1,"Search for ""pliers"" from the home page.",Search results are displayed with the search caption.
+,,,,,,,,2,Click the search reset (X) button.,The search caption disappears and the full default product grid is restored.
+TC-020,Toolshop - Product Discovery - Filters - Single category filter narrows the listing,Verify that checking one category shows only products belonging to it.,Manual,High,Regression,UI,Positive,1,Navigate to the home page.,Category filter checkboxes are displayed in the sidebar.
+,,,,,,,,2,"Check a single category (e.g. ""Pliers"" under Hand Tools).","The grid updates to show only products of that category (e.g. Combination Pliers is listed, unrelated products such as drills are not)."
+,,,,,,,,3,Uncheck the category.,The full listing is restored.
+TC-021,Toolshop - Product Discovery - Filters - Multiple category filters combine results,Verify that checking several categories shows products from all of them.,Manual,Medium,Regression,UI,Positive,1,Navigate to the home page.,Category filters are displayed.
+,,,,,,,,2,"Check two categories (e.g. ""Hammer"" and ""Saw"").",The grid shows products belonging to either of the selected categories.
+TC-022,Toolshop - Product Discovery - Filters - Brand filter shows only that brand's products,Verify that the brand filter limits the grid to the selected brand.,Manual,High,Regression,UI,Positive,1,Navigate to the home page.,Brand filter checkboxes are displayed.
+,,,,,,,,2,"Check a brand (e.g. ""ForgeFlex Tools"").",The grid updates to show only products of the selected brand.
+,,,,,,,,3,Open one of the listed products.,The product detail page shows the selected brand chip next to the category chip.
+TC-023,Toolshop - Product Discovery - Filters - Price range slider limits results,Verify that narrowing the price slider keeps only products priced within the range.,Manual,Medium,Regression,UI,Positive,1,Navigate to the home page.,The price range slider (1-200) is displayed.
+,,,,,,,,2,Narrow the range (e.g. set the maximum to 15).,The grid updates and every displayed product price is within the selected range.
+TC-024,Toolshop - Product Discovery - Filters - Eco-friendly filter shows only sustainable products,Verify that the eco-friendly checkbox limits the grid to eco-friendly products.,Manual,Medium,Regression,UI,Positive,1,Navigate to the home page.,"The ""Show only eco-friendly products"" checkbox is displayed under Sustainability."
+,,,,,,,,2,Check the eco-friendly filter.,The grid updates to show only eco-friendly products with favorable CO2 badges.
+TC-025,Toolshop - Product Discovery - Sorting - Price low to high orders the grid by ascending price,Verify ascending price sorting of the product grid.,Manual,High,Regression,UI,Positive,1,Navigate to the home page.,The sort dropdown is displayed.
+,,,,,,,,2,"Select ""Price (Low - High)"" from the sort dropdown.",Displayed products are ordered by ascending price.
+TC-026,Toolshop - Product Discovery - Sorting - Name Z to A orders the grid alphabetically descending,Verify descending alphabetical sorting of the product grid.,Manual,Medium,Regression,UI,Positive,1,Navigate to the home page.,The sort dropdown is displayed.
+,,,,,,,,2,"Select ""Name (Z - A)"" from the sort dropdown.",Displayed products are ordered by descending name.
+TC-027,Toolshop - Product Discovery - Sorting - CO2 rating orders by sustainability,Verify that sorting by CO2 rating orders products from best to worst badge.,Manual,Medium,Regression,UI,Positive,1,Navigate to the home page.,The sort dropdown is displayed.
+,,,,,,,,2,"Select ""CO₂ Rating (A - E)"" from the sort dropdown.",Products are ordered from best (A) to worst (E) CO2 badge.
+TC-028,Toolshop - Product Discovery - Pagination - Page links navigate through the catalog,Verify that pagination shows different products per page and can navigate back.,Manual,High,Regression,UI,Positive,1,Navigate to the home page.,Page 1 of the grid is displayed with pagination controls.
+,,,,,,,,2,Click page 2 (or the next arrow).,A different set of products is displayed and page 2 is marked active.
+,,,,,,,,3,Click the previous arrow.,Page 1 products are displayed again.
+TC-029,Toolshop - Product Discovery - Search - Sorting applies within search results,Verify that sorting re-orders the search result set without losing the search term.,Manual,Medium,Regression,UI,Positive,1,"Search for ""saw"" from the home page.",Search results are displayed.
+,,,,,,,,2,"Select ""Price (High - Low)"" from the sort dropdown.",The results remain filtered by the term and are re-ordered by descending price.
+TC-030,Toolshop - Product Discovery - Listing - Out-of-stock products are labeled on the grid,Verify that sold-out products are clearly marked in the listing.,Manual,High,Regression,UI,Positive,1,Navigate to the home page.,Product grid is displayed.
+,,,,,,,,2,Locate a product marked as out of stock (e.g. Long Nose Pliers).,"The card displays an ""Out of stock"" label."
+TC-031,Toolshop - Product Discovery - Localization - Language switch changes the UI language,Verify that switching the language updates the UI texts and can be switched back.,Manual,Medium,Regression,UI,Positive,1,Navigate to the home page.,The language selector shows EN.
+,,,,,,,,2,"Open the language selector and choose ""TR"".","The UI texts (navigation, sidebar headings) change to Turkish."
+,,,,,,,,3,"Switch back to ""EN"".",The UI returns to English.
+TC-032,Toolshop - Product Discovery - Compare - Two products can be compared side by side,Verify that products can be added to the comparison from the grid and viewed together.,Manual,Medium,Regression,UI,Positive,1,Navigate to the home page.,Product cards display a compare icon.
+,,,,,,,,2,Click the compare icon on two different products.,Both products are added to the comparison.
+,,,,,,,,3,Open the comparison view.,The two products are displayed side by side with their details.
+TC-033,Toolshop - Product Discovery - Navigation - Category menu opens a pre-filtered listing,Verify that the Categories navigation menu opens a listing limited to the chosen category group.,Manual,Low,Regression,UI,Positive,1,"From the top navigation, open Categories and click ""Hand Tools"".",A listing page opens showing only Hand Tools products.
