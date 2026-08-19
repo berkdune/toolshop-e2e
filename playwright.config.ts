@@ -17,7 +17,13 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [
-    { name: 'chromium', testDir: './tests/ui', use: { ...devices['Desktop Chrome'] } },
+    {
+      name: 'chromium',
+      testDir: './tests/ui',
+      // Sabit gerçek UA: demo'nun WAF'ı datacenter IP + "HeadlessChrome" UA
+      // kombinasyonunda tarayıcının API çağrılarını engelliyor (CI'da görüldü).
+      use: { ...devices['Desktop Chrome'], userAgent: appConfig.browserUA, locale: 'en-US' },
+    },
     { name: 'api', testDir: './tests/api' },
   ],
 });
