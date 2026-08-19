@@ -1,7 +1,7 @@
 # Traceability Matrisi — TC ↔ Otomasyon
 
 > Bu dosya `node scripts/validate-cases.js` ile üretilir; Otomasyon kolonu tests/ altındaki spec'lerden otomatik taranır.
-> Toplam: **122 case** · Smoke: **14** · Otomatize: **122** · Kaynak: docs/cases/*.csv
+> Toplam: **128 case** · Smoke: **14** · Otomatize: **128** · Kaynak: docs/cases/*.csv
 
 ## Auth (`auth.csv`, 15 case)
 
@@ -115,7 +115,7 @@
 |---|---|---|---|---|---|
 | TC-077 | Form - Guest sends a message with valid data | High | Regression, UI, Positive | 2 | ✅ tests/ui/contact.spec.ts |
 | TC-078 | Form - Required-field validations | High | Regression, UI, Negative | 2 | ✅ tests/ui/contact.spec.ts |
-| TC-079 | Form - Logged-in user's identity is prefilled | Medium | Regression, UI, Positive | 2 | ✅ tests/ui/contact.spec.ts |
+| TC-079 | Form - Logged-in user's message is linked to the account | Medium | Regression, UI, Positive | 2 | ✅ tests/ui/contact.spec.ts |
 | TC-080 | Attachment - Allowed file is accepted | Medium | Regression, UI, Positive | 2 | ✅ tests/ui/contact.spec.ts |
 | TC-081 | Attachment - Non-empty attachment is rejected | High | Regression, UI, Negative | 2 | ✅ tests/ui/contact.spec.ts |
 | TC-082 | Form - Message shorter than the minimum length is rejected | Medium | Regression, UI, Negative | 2 | ✅ tests/ui/contact.spec.ts |
@@ -169,4 +169,15 @@
 | TC-120 | Invoices - A user cannot read another user's invoice | High | Regression, API, Negative | 2 | ✅ tests/api/commerce.api.spec.ts |
 | TC-121 | Contact - Message can be created and is visible to the admin | Medium | Regression, API, Positive | 2 | ✅ tests/api/misc.api.spec.ts |
 | TC-122 | Postcode - Lookup resolves a valid postcode and rejects an invalid one | Medium | Regression, API, Positive | 2 | ✅ tests/api/misc.api.spec.ts |
+
+## Quality (`quality.csv`, 6 case)
+
+| TC | Case | Öncelik | Etiketler | Adım | Otomasyon |
+|---|---|---|---|---|---|
+| TC-123 | A11y - Home page has no serious accessibility violations | Medium | Regression, UI, Positive | 1 | ✅ tests/ui/quality.spec.ts |
+| TC-124 | A11y - Login and registration pages have no serious violations | Medium | Regression, UI, Positive | 2 | ✅ tests/ui/quality.spec.ts |
+| TC-125 | A11y - Product detail page has no serious violations | Medium | Regression, UI, Positive | 1 | ✅ tests/ui/quality.spec.ts |
+| TC-126 | A11y - Contact page has no serious violations | Medium | Regression, UI, Positive | 1 | ✅ tests/ui/quality.spec.ts |
+| TC-127 | Visual - Login page matches the approved baseline | Low | Regression, UI, Positive | 1 | ✅ tests/ui/quality.spec.ts |
+| TC-128 | Visual - Contact page matches the approved baseline | Low | Regression, UI, Positive | 1 | ✅ tests/ui/quality.spec.ts |
 

@@ -5,10 +5,10 @@
 
 End-to-end **UI + API** test automation for [practicesoftwaretesting.com](https://practicesoftwaretesting.com) (Toolshop, a public e-commerce demo), built with **Playwright + TypeScript**.
 
-The project follows a test-case-first QA workflow: the application was explored first, a **122-case manual test suite** was written in Xray-importable CSV format, and then **all 122 cases were automated** — with full traceability between the two.
+The project follows a test-case-first QA workflow: the application was explored first, a **128-case manual test suite** was written in Xray-importable CSV format, and then **all 128 cases were automated** — with full traceability between the two.
 
 ```
-122 test cases  →  122 automated tests (97 UI + 25 API)  →  full suite in ~4 minutes
+128 test cases  →  128 automated tests (103 UI + 25 API)  →  full suite in ~4 minutes
 ```
 
 ## Highlights
@@ -29,6 +29,7 @@ The project follows a test-case-first QA workflow: the application was explored 
 | Forgot-password confirmation renders a **raw i18n key** (`page.forgot-password.confirm`) | TC-011 |
 | Register API performs no server-side **email format** validation (client-side only) | TC-102 |
 | Contact attachments are only accepted when the file is **empty (0 bytes)** ("File should be empty.") | TC-080/081 |
+| Accessibility (axe, WCAG A/AA): icon-only button without an accessible name (**critical**) on auth pages; invalid list markup on the home filters and password-requirements list (**serious**) | TC-123–126 |
 
 ## Quick start
 
@@ -62,7 +63,7 @@ No configuration needed — defaults target the public demo. Override via `.env`
 │   ├── api/api-client.ts     # register/login, carts, invoices, admin helpers, cleanup
 │   └── utils/                # data factory, session injection, money parsing
 ├── tests/
-│   ├── ui/                   # 97 UI tests across 8 modules
+│   ├── ui/                   # 103 UI tests across 9 modules (incl. axe a11y + visual examples)
 │   └── api/                  # 25 API contract tests
 └── .github/workflows/e2e.yml # smoke on push · full nightly + report to Pages
 ```
@@ -83,7 +84,7 @@ No configuration needed — defaults target the public demo. Override via `.env`
 The public demo sits behind **Cloudflare bot protection** that serves an interactive "verify you are human" challenge to datacenter IPs — so browser tests cannot (and should not try to) run against it from GitHub-hosted runners. Instead, CI is **hermetic**: the workflow boots the application under test inside the runner using the upstream project's prebuilt Docker images, seeds the database, and runs the suite against `localhost`. This also removes the shared-demo variables (hourly resets, strangers draining stock) from CI entirely.
 
 - **Push / PR** → app boots in Docker → smoke suite on chromium.
-- **Nightly (01:25 UTC) / manual** → full 122-test run; the HTML report (with traces for failures) is published to [GitHub Pages](https://berkdune.github.io/toolshop-e2e/).
+- **Nightly (01:25 UTC) / manual** → full run (visual tests excluded — their baselines are platform-specific and maintained locally); the HTML report (with traces for failures) is published to [GitHub Pages](https://berkdune.github.io/toolshop-e2e/).
 - **Local runs** target the public demo by default (that's where the shared-environment countermeasures above earn their keep); point `BASE_URL`/`API_URL` at a local Docker instance to run hermetically.
 
 ## License

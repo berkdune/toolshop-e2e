@@ -16,6 +16,7 @@ const MODULES = [
   ['contact.csv', 'Contact'],
   ['admin.csv', 'Admin'],
   ['api.csv', 'API'],
+  ['quality.csv', 'Quality'],
 ];
 const HEADER = 'test_id,case_name,case_description,test_type,priority,labels,labels,labels,step_number,step_action,expected_result';
 const PRIORITIES = ['Highest', 'High', 'Medium', 'Low'];

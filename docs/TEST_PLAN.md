@@ -1,7 +1,7 @@
 # Toolshop E2E — Test Planı
 
 > Proje: `toolshop-e2e` · Hedef: https://practicesoftwaretesting.com (Toolshop)
-> Amaç: CV/portfolio + öğrenme · Tarih: 19 Ağustos 2026 · Durum: Faz 0–4 ✓ TAMAM — 122/122 test otomatize (~4 dk), repo github.com/berkdune/toolshop-e2e, CI: push'ta smoke + gecelik tam koşum (01:25 UTC), rapor: berkdune.github.io/toolshop-e2e · Faz 5 (a11y/visual) opsiyonel
+> Amaç: CV/portfolio + öğrenme · Tarih: 19 Ağustos 2026 · Durum: Faz 0–4 ✓ TAMAM — 122/122 test otomatize (~4 dk), repo github.com/berkdune/toolshop-e2e, CI: push'ta smoke + gecelik tam koşum (01:25 UTC), rapor: berkdune.github.io/toolshop-e2e · **Faz 5 ✓** (Quality modülü TC-123..128: axe a11y — 2 gerçek ihlal bug adayı olarak known-listede — + 2 görsel regresyon örneği; toplam 128/128)
 
 ---
 
