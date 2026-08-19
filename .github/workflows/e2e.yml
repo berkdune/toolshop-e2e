@@ -19,8 +19,9 @@ on:
   workflow_dispatch:
 
 env:
-  BASE_URL: http://localhost:4200
-  API_URL: http://localhost:8091
+  # 127.0.0.1: runner'da localhost ::1'e çözülüp Docker'ın IPv4 port yayınını ıskalayabiliyor
+  BASE_URL: http://127.0.0.1:4200
+  API_URL: http://127.0.0.1:8091
 
 jobs:
   smoke:
@@ -54,11 +55,22 @@ jobs:
           docker compose -f docker-compose.prod.yml logs --tail 80
           exit 1
       - name: Wait for API and UI
+        working-directory: sut
         run: |
-          for i in $(seq 1 60); do curl -sf http://localhost:8091/status > /dev/null && break; sleep 3; done
-          curl -sf http://localhost:8091/status
-          for i in $(seq 1 90); do curl -sf -o /dev/null http://localhost:4200 && break; sleep 3; done
-          curl -sf -o /dev/null http://localhost:4200 && echo "UI up"
+          ok=0
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:8091/status > /dev/null && ok=1 && break; sleep 3; done
+          if [ "$ok" != "1" ]; then
+            echo "::error::API 8091 ayağa kalkmadı"; docker compose -f docker-compose.prod.yml ps
+            docker compose -f docker-compose.prod.yml logs web laravel-api --tail 60; exit 1
+          fi
+          curl -sf http://127.0.0.1:8091/status
+          ok=0
+          for i in $(seq 1 90); do curl -sf -o /dev/null http://127.0.0.1:4200 && ok=1 && break; sleep 3; done
+          if [ "$ok" != "1" ]; then
+            echo "::error::UI 4200 ayağa kalkmadı"; docker compose -f docker-compose.prod.yml ps
+            docker compose -f docker-compose.prod.yml logs angular-ui --tail 60; exit 1
+          fi
+          echo "UI up"
       - run: npm run test:smoke
       - uses: actions/upload-artifact@v4
         if: failure()
@@ -105,11 +117,22 @@ jobs:
           docker compose -f docker-compose.prod.yml logs --tail 80
           exit 1
       - name: Wait for API and UI
+        working-directory: sut
         run: |
-          for i in $(seq 1 60); do curl -sf http://localhost:8091/status > /dev/null && break; sleep 3; done
-          curl -sf http://localhost:8091/status
-          for i in $(seq 1 90); do curl -sf -o /dev/null http://localhost:4200 && break; sleep 3; done
-          curl -sf -o /dev/null http://localhost:4200 && echo "UI up"
+          ok=0
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:8091/status > /dev/null && ok=1 && break; sleep 3; done
+          if [ "$ok" != "1" ]; then
+            echo "::error::API 8091 ayağa kalkmadı"; docker compose -f docker-compose.prod.yml ps
+            docker compose -f docker-compose.prod.yml logs web laravel-api --tail 60; exit 1
+          fi
+          curl -sf http://127.0.0.1:8091/status
+          ok=0
+          for i in $(seq 1 90); do curl -sf -o /dev/null http://127.0.0.1:4200 && ok=1 && break; sleep 3; done
+          if [ "$ok" != "1" ]; then
+            echo "::error::UI 4200 ayağa kalkmadı"; docker compose -f docker-compose.prod.yml ps
+            docker compose -f docker-compose.prod.yml logs angular-ui --tail 60; exit 1
+          fi
+          echo "UI up"
       - run: npx playwright test
       - uses: actions/upload-artifact@v4
         if: always()
