@@ -33,7 +33,7 @@ test.describe('Auth', () => {
     async ({ loginPage }) => {
       await loginPage.goto();
       await loginPage.login(`nobody.${Date.now()}@example.com`, 'whatever-1!');
-      // Kayıtlı olmayan e-postada da aynı generic mesaj → user enumeration yok.
+      // Unregistered emails get the same generic message — no user enumeration.
       await expect(loginPage.error).toHaveText('Invalid email or password');
     },
   );
@@ -64,7 +64,7 @@ test.describe('Auth', () => {
     'TC-006 | Login - Account locks after repeated failed attempts',
     { tag: ['@regression', '@auth'] },
     async ({ loginPage, testUser, api }) => {
-      // Kilit eşiği keşifte 4. yanlış denemede gözlendi; denemeler API'den (hızlı), doğrulama UI'dan.
+      // The account locks on the 4th failed attempt; attempts go through the API, the check through the UI.
       for (let i = 0; i < 4; i++) await api.loginRaw(testUser.email, 'wrong-password-1!');
       await loginPage.goto();
       await loginPage.login(testUser.email, testUser.password);
@@ -132,11 +132,11 @@ test.describe('Auth', () => {
       await page.getByTestId('forgot-password-submit').click();
       const alert = page.locator('.alert').first();
       await expect(alert).toBeVisible();
-      // Bilinen kusur: onay metni ham i18n anahtarı olarak geliyor ("page.forgot-password.confirm").
+      // Known defect: the confirmation renders a raw i18n key ("page.forgot-password.confirm").
       if ((await alert.textContent())?.includes('page.forgot-password.confirm')) {
         testInfo.annotations.push({
           type: 'bug-candidate',
-          description: 'Forgot-password onayı ham i18n anahtarı gösteriyor: page.forgot-password.confirm',
+          description: 'Forgot-password confirmation shows a raw i18n key: page.forgot-password.confirm',
         });
       }
     },
@@ -188,7 +188,7 @@ test.describe('Auth', () => {
       await loginPage.goto();
       await loginPage.login(config.admin.email, config.admin.password);
       await expect(page).toHaveURL(/\/admin\/dashboard/);
-      // Admin menü linkleri kullanıcı adı dropdown'ının içinde; önce menü açılır.
+      // Admin menu links live inside the user-name dropdown; open it first.
       await admin.navUserMenu.click();
       await expect(admin.navProducts).toBeVisible();
       await expect(admin.navUsers).toBeVisible();

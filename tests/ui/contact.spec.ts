@@ -42,13 +42,13 @@ test.describe('Contact', () => {
       await page.goto('/contact');
       await expect(page.getByTestId('subject')).toBeVisible();
 
-      // Sürüm farkı: yayındaki v5.0 oturumda kimlik alanlarını BOŞ gösteriyor (prefill yok
-      // — bulgu); upstream main build'i ise alanları tamamen gizliyor. İkisini de kabul et.
+      // Build difference: the deployed v5.0 shows empty identity fields when signed
+      // in (no prefill — a finding); the upstream main build hides them. Accept both.
       const identityVisible = await page.getByTestId('first-name').isVisible().catch(() => false);
       if (identityVisible) {
         testInfo.annotations.push({
           type: 'finding',
-          description: 'Contact formu oturum açık kullanıcıda kimlik alanlarını boş gösteriyor (prefill yok); mesaj yine de hesaba bağlanıyor.',
+          description: 'The contact form shows empty identity fields for signed-in users (no prefill); the message still links to the account.',
         });
         await fillContactForm(page, testUser.email);
       } else {
@@ -59,7 +59,7 @@ test.describe('Contact', () => {
       await expect(page.getByText(/thanks|success/i).first()).toBeVisible({ timeout: 10_000 });
 
       await page.goto('/account/messages');
-      // Listede subject slug olarak görünüyor ("customer-service").
+      // The list shows the subject as a slug ("customer-service").
       await expect(page.locator('table tbody tr').first()).toContainText(/customer[- ]service/i);
     },
   );
@@ -68,7 +68,7 @@ test.describe('Contact', () => {
     'TC-080 | Attachment - Allowed file is accepted',
     { tag: ['@regression', '@contact'] },
     async ({ page }, testInfo) => {
-      // Keşfedilen kural: ek dosya BOŞ (0 bayt) olmak zorunda ("File should be empty.").
+      // Discovered rule: the attachment must be empty (0 bytes) — "File should be empty."
       const emptyFile = testInfo.outputPath('empty.txt');
       fs.writeFileSync(emptyFile, '');
 

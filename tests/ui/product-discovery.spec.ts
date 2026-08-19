@@ -46,7 +46,7 @@ test.describe('Product Discovery', () => {
       await home.goto();
       await home.searchFor('qwertyxyz123');
       await expect(home.searchResultCount).toBeVisible();
-      // Eski grid kartları arama sonucundan geç sökülebiliyor → auto-retry'lı assertion.
+      // Stale grid cards can unmount later than the result state — use an auto-retrying assertion.
       await expect(home.productCards).toHaveCount(0);
     },
   );
@@ -121,8 +121,8 @@ test.describe('Product Discovery', () => {
       await home.goto();
       await expect(home.productCards.first()).toBeVisible();
 
-      // ngx-slider: max tutamacı klavyeyle indir (PageDown ~20'lik kaba adım, ArrowLeft 1'lik ince adım).
-      // Tutamaca tıklamak değeri sıçratabiliyor; press() zaten odaklıyor.
+      // ngx-slider: lower the max handle via keyboard (PageDown for coarse ~20 steps,
+      // ArrowLeft for fine steps). Clicking the handle can jump the value; press() focuses it.
       const maxHandle = page.getByRole('slider').nth(1);
       const value = async () => Number(await maxHandle.getAttribute('aria-valuenow'));
       for (let i = 0; i < 12 && (await value()) > 36; i++) await maxHandle.press('PageDown');
@@ -191,7 +191,7 @@ test.describe('Product Discovery', () => {
       await home.sortSelect.selectOption('co2_rating,asc');
       await expect.poll(async () => (await home.productNames.allTextContents()).join('|')).not.toBe(before.join('|'));
 
-      // Çapraz doğrulama: UI'daki ilk ürün, API'nin aynı sıralamadaki ilk sayfasında olmalı.
+      // Cross-check: the first product in the UI must be on the first API page with the same sort.
       const apiNames: string[] = ((await (await api.http.get('/products?sort=co2_rating,asc')).json()).data as Array<{ name: string }>).map((p) => p.name);
       const uiFirst = (await home.productNames.allTextContents())[0].trim();
       expect(apiNames).toContain(uiFirst);

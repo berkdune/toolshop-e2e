@@ -11,7 +11,7 @@ test.describe('Product Detail', () => {
       await home.openProduct('Combination Pliers');
 
       await expect(productPage.name).toHaveText('Combination Pliers');
-      // "$" işareti unit-price span'inin dışında; span salt sayısal fiyat içerir.
+      // The "$" sign sits outside the unit-price span; the span holds the bare number.
       await expect(productPage.price).toHaveText(/^\d+\.\d{2}$/);
       await expect(productPage.description).not.toBeEmpty();
       await expect(productPage.co2Badge).toBeVisible();
@@ -95,7 +95,7 @@ test.describe('Product Detail', () => {
 
       await home.goto();
       await home.openProduct(stockProduct.name);
-      // POST /favorites tamamlanmadan navigasyon isteği iptal edebiliyor → yanıtı bekle.
+      // Navigating before POST /favorites completes cancels it — wait for the response.
       const favoriteResponse = page.waitForResponse(
         (r) => r.url().includes('/favorites') && r.request().method() === 'POST',
       );
@@ -149,7 +149,7 @@ test.describe('Product Detail', () => {
       await home.openProduct(stockProduct.name);
       await expect(page.getByRole('heading', { name: 'Related products' })).toBeVisible();
 
-      // Detay sayfasındaki tek ürün linkleri related bölümündedir.
+      // The only product links on a detail page are in the related section.
       await page.locator('a[href*="/product/"]').first().click();
       await expect(productPage.name).not.toHaveText(stockProduct.name);
       await expect(page).toHaveURL(/\/product\//);
@@ -168,7 +168,7 @@ test.describe('Product Detail', () => {
       await expect(productPage.price).toBeVisible();
       await expect(productPage.co2Badge).toBeVisible();
       await expect(productPage.addToCartBtn).toBeVisible();
-      // Standart adet stepper'ı yok; süre için slider var (kiralamaya özgü yerleşim).
+      // No quantity stepper; a duration slider instead (rental-specific layout).
       expect(await productPage.quantityInput.count()).toBe(0);
       expect(await page.getByRole('slider').count()).toBeGreaterThanOrEqual(1);
     },

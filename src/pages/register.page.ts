@@ -13,10 +13,10 @@ export class RegisterPage extends BasePage {
     await this.page.getByTestId('first-name').fill(user.firstName);
     await this.page.getByTestId('last-name').fill(user.lastName);
     await this.page.getByTestId('dob').fill(user.dob);
-    // Ülke değişimi adres alanlarını asenkron temizleyebiliyor (postcode-lookup watcher'ı)
-    // → ülke ÖNCE seçilir, adres sonra doldurulur.
+    // Changing the country can asynchronously clear the address fields
+    // (postcode-lookup watcher), so the country is selected first.
     const country = this.page.getByTestId('country');
-    // Select değeri ISO kod; bazı sürümlerde label ile eşleşebilir — iki yol da denenir.
+    // The select uses ISO codes; some builds match by label instead — try both.
     await country.selectOption(user.country).catch(() => country.selectOption({ label: 'Turkey' }));
     const addressFields: Array<[string, string]> = [
       ['postal_code', user.postalCode],
@@ -29,7 +29,7 @@ export class RegisterPage extends BasePage {
     await this.page.getByTestId('phone').fill(user.phone);
     await this.page.getByTestId('email').fill(user.email);
     await this.page.getByTestId('password').fill(user.password);
-    // Geç tetiklenen bir temizleme alanı boşaltmışsa submit öncesi geri doldur.
+    // Refill anything a late-firing reset may have cleared before submitting.
     for (const [testId, value] of addressFields) {
       const field = this.page.getByTestId(testId);
       if ((await field.inputValue()) === '') await field.fill(value);

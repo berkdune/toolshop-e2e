@@ -9,7 +9,7 @@ async function adminSession(page: Page, api: ApiClient): Promise<void> {
   await injectSession(page, await api.adminToken());
 }
 
-/** Form submit'i tıklar ve ilgili API yanıtını bekler (erken navigasyon isteği iptal eder). */
+/** Clicks a form submit and waits for its API response (early navigation cancels the request). */
 async function submitAndWait(page: Page, submitTestId: string, urlPart: string): Promise<void> {
   const response = page.waitForResponse(
     (r) => r.url().includes(urlPart) && ['POST', 'PUT', 'PATCH'].includes(r.request().method()),
@@ -19,9 +19,9 @@ async function submitAndWait(page: Page, submitTestId: string, urlPart: string):
 }
 
 /**
- * Admin listelerinde arar ve eşleşen satırı döndürür.
- * Liste sayfası bootstrap sırasında search tıklaması yutulabiliyor (gözlenen flake)
- * → sonuç gelene dek aramayı yeniden gönderir.
+ * Searches an admin list and returns the matching row. The list page can
+ * swallow a search click while bootstrapping, so the search is re-submitted
+ * until a result shows up.
  */
 async function adminSearch(page: Page, entity: 'product' | 'brand' | 'category' | 'user' | 'order', query: string) {
   const rows = page.locator('table tbody tr').filter({ hasText: query });
@@ -73,7 +73,7 @@ test.describe('Admin', () => {
       await page.goto('/admin/products');
       await expect(await adminSearch(page, 'product', name)).toBeVisible();
 
-      // Vitrinde de görünmeli.
+      // It must be visible on the storefront too.
       await home.goto();
       await home.searchFor(name);
       await expect(home.productNames.filter({ hasText: name }).first()).toBeVisible();
@@ -89,7 +89,7 @@ test.describe('Admin', () => {
     async ({ page, api, home }, testInfo) => {
       testInfo.annotations.push({
         type: 'bug-candidate',
-        description: 'Ürün edit formu stock ve dropdown alanlarını prefill etmiyor; dokunulmamış kayıt "Quantity is required" ile reddediliyor.',
+        description: 'The product edit form does not prefill stock/dropdowns; saving an untouched product fails with "Quantity is required".',
       });
       const name = `E2E Product ${uniqueStamp()}`;
       const renamed = `${name} Edited`;
@@ -101,8 +101,8 @@ test.describe('Admin', () => {
 
       await page.getByTestId(`product-edit-${product.id}`).click();
       await expect(page.getByTestId('name')).toHaveValue(name);
-      // Bulgu (bug adayı): edit formu stock ve dropdown'ları prefill ETMİYOR;
-      // hiçbir şey değiştirmeden kaydetmek bile "Quantity is required" hatası verir.
+      // Defect: the edit form does not prefill stock and the dropdowns, so they
+      // must be re-entered even when nothing else changes.
       await page.getByTestId('name').fill(renamed);
       await page.getByTestId('price').fill('19.99');
       await page.getByTestId('stock').fill('10');
@@ -115,8 +115,8 @@ test.describe('Admin', () => {
       await page.goto('/admin/products');
       await expect(await adminSearch(page, 'product', renamed)).toBeVisible();
 
-      // Vitrin: arama indeksi gecikebiliyor → doğrudan ürün detay sayfasından doğrula.
-      // Not: eco ürünlerde h1 başlığa "ECO" rozeti ekleniyor → contains eşleşmesi.
+      // Storefront check via the product detail page (the search index can lag).
+      // Eco products get an "ECO" badge appended to the h1, hence the contains match.
       await page.goto(`/product/${product.id}`);
       await expect(page.getByTestId('product-name')).toContainText(renamed);
       await expect(page.getByTestId('unit-price')).toHaveText('19.99');
@@ -143,8 +143,8 @@ test.describe('Admin', () => {
 
       await home.goto();
       await home.searchFor(name);
-      // Arama bazen bootstrap'la yarışıp tüm grid'i gösterebiliyor; asıl değişmez:
-      // silinen ürünün adı vitrinde HİÇBİR yerde görünmemeli.
+      // The search can race the app bootstrap and show the full grid; the real
+      // invariant is that the deleted product name appears nowhere.
       await expect(home.productNames.filter({ hasText: name })).toHaveCount(0);
     },
   );
@@ -192,7 +192,7 @@ test.describe('Admin', () => {
       const id = editAttr.replace('brand-', '').replace('-edit', '');
 
       await row.locator('[data-test$="-edit"]').click();
-      await expect(page.getByTestId('name')).toHaveValue(name); // form asenkron dolana kadar bekle
+      await expect(page.getByTestId('name')).toHaveValue(name); // wait for the form to fill asynchronously
       await page.getByTestId('name').fill(renamed);
       await submitAndWait(page, 'brand-submit', '/brands');
 
@@ -223,12 +223,12 @@ test.describe('Admin', () => {
       await page.goto('/admin/categories');
       const row = await adminSearch(page, 'category', name);
       await expect(row).toBeVisible();
-      // Not: kategori kontrolleri fiil-önce adlandırılmış (category-edit-{id}), marka ise brand-{id}-edit.
+      // Category controls are verb-first (category-edit-{id}); brands use brand-{id}-edit.
       const editAttr = (await row.locator('[data-test^="category-edit-"]').getAttribute('data-test')) ?? '';
       const id = editAttr.replace('category-edit-', '');
 
       await row.locator('[data-test^="category-edit-"]').click();
-      await expect(page.getByTestId('name')).toHaveValue(name); // form asenkron dolana kadar bekle
+      await expect(page.getByTestId('name')).toHaveValue(name); // wait for the form to fill asynchronously
       await page.getByTestId('name').fill(renamed);
       await submitAndWait(page, 'category-submit', '/categories');
 
@@ -329,7 +329,7 @@ test.describe('Admin', () => {
       await row.locator('[data-test^="order-edit-"]').click();
       await expect(page.getByTestId('invoice-number')).toHaveValue(invoice.invoice_number);
       await page.getByTestId('order-status').selectOption('SHIPPED');
-      // PUT /invoices/{id}/status tamamlanmadan sayfadan ayrılmak isteği iptal eder.
+      // Leaving the page before PUT /invoices/{id}/status completes cancels it.
       const statusResponse = page.waitForResponse(
         (r) => r.url().includes('/status') && r.request().method() === 'PUT',
       );
@@ -346,7 +346,7 @@ test.describe('Admin', () => {
     'TC-094 | Messages - Admin replies to a contact message',
     { tag: ['@regression', '@admin'] },
     async ({ page, api, testUser }, testInfo) => {
-      // Mesaj kullanıcı token'ıyla açılır ki hesapla ilişkilensin.
+      // The message is created with the user's token so it links to the account.
       const token = await api.login(testUser.email, testUser.password);
       const messageBody = `E2E message for reply flow ${Date.now()} - please reply to this automated message.`;
       const createRes = await api.http.post('/messages', {
@@ -356,7 +356,7 @@ test.describe('Admin', () => {
       expect(createRes.ok()).toBe(true);
       const messageId = (await createRes.json()).id as string;
 
-      // Admin mesajı listede görür ve açabilir.
+      // The admin can see and open the message.
       await adminSession(page, api);
       await page.goto('/admin/messages');
       const row = page.locator('table tbody tr').filter({ hasText: testUser.lastName }).first();
@@ -364,16 +364,16 @@ test.describe('Admin', () => {
       await row.locator('a, button').first().click();
       await expect(page.getByText(messageBody.slice(0, 40))).toBeVisible();
 
-      // Yanıt sözleşme üzerinden (POST /messages/{id}/reply) verilir — keşifte doğrulanan akış.
+      // The reply goes through the API contract (POST /messages/{id}/reply).
       const replyText = `E2E admin reply ${Date.now()}`;
       const replyRes = await api.http.post(`/messages/${messageId}/reply`, {
         headers: api.bearer(await api.adminToken()),
         data: { subject: 'Webmaster', message: replyText },
       });
       expect(replyRes.ok()).toBe(true);
-      testInfo.annotations.push({ type: 'note', description: 'Yanıt API sözleşmesiyle gönderildi; müşteri tarafı UI ile doğrulanıyor.' });
+      testInfo.annotations.push({ type: 'note', description: 'Reply sent via the API contract; the customer side is verified through the UI.' });
 
-      // Müşteri yanıtı hesabındaki mesaj detayında görmeli.
+      // The customer must see the reply in the account message detail.
       await injectSession(page, token);
       await page.goto('/account/messages');
       await page.locator('table tbody tr').first().locator('a, button').first().click();
@@ -427,7 +427,7 @@ test.describe('Admin', () => {
     'TC-097 | Integrity - Brand in use cannot be deleted',
     { tag: ['@regression', '@admin'] },
     async ({ page, api }, testInfo) => {
-      // Paylaşılan demoda seed markaya dokunmuyoruz: kendi markamız + onu kullanan ürünle test.
+      // Never touch seed brands on the shared demo: use an own brand + a product that uses it.
       const stamp = uniqueStamp();
       const brand = await api.createBrand(`E2E InUse Brand ${stamp}`, `e2e-inuse-${stamp}`);
       const product = await api.createProduct(`E2E InUse Product ${stamp}`, { brandId: brand.id });
@@ -442,7 +442,7 @@ test.describe('Admin', () => {
       await page.waitForTimeout(1500);
       await page.goto('/admin/brands');
       await expect(await adminSearch(page, 'brand', `E2E InUse Brand ${stamp}`)).toBeVisible();
-      testInfo.annotations.push({ type: 'note', description: 'Kullanımda olan marka silinemedi (beklenen bütünlük davranışı).' });
+      testInfo.annotations.push({ type: 'note', description: 'Brand in use could not be deleted (expected integrity behavior).' });
 
       await api.tryDeleteProduct(product.id);
       await api.tryDeleteBrand(brand.id);

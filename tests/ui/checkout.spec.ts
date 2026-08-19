@@ -13,7 +13,7 @@ interface Flow {
   page: Page;
 }
 
-/** Ürünü sepete atar, kayıtlı kullanıcıyla giriş yapıp Payment adımına kadar ilerler. */
+/** Adds a product to the cart, signs in and proceeds to the Payment step. */
 async function reachPayment(f: Flow, user: TestUser, productName: string): Promise<void> {
   await f.home.goto();
   await f.home.openProduct(productName);
@@ -54,7 +54,7 @@ test.describe('Checkout', () => {
       await checkout.payWith('cash-on-delivery');
       await expect(checkout.successMessage).toHaveText('Payment was successful', { timeout: 15_000 });
 
-      // Akış iki fazlı: ilk Confirm ödeme kontrolü, İKİNCİ Confirm siparişi verir.
+      // The flow is two-phase: the first Confirm only checks the payment; the second places the order.
       const invoiceResponse = page.waitForResponse(
         (r) => r.url().includes('/invoices') && r.request().method() === 'POST',
       );
@@ -88,7 +88,7 @@ test.describe('Checkout', () => {
     'TC-054 | Billing - Proceed stays disabled until the billing form is complete',
     { tag: ['@regression', '@checkout'] },
     async ({ home, productPage, checkout, api, stockProduct }, testInfo) => {
-      // API kayıtta house_number null olabiliyor ama UI zorunlu tutuyor — bilinen tutarsızlık.
+      // The API accepts a null house_number on registration while the UI requires it.
       const user = { ...buildUser(), houseNumber: '' };
       user.id = await api.register(user);
 
@@ -103,8 +103,8 @@ test.describe('Checkout', () => {
       await expect(checkout.houseNumber).toHaveValue('');
       await expect(checkout.proceed3).toBeDisabled();
 
-      // Bulgu (bug adayı): kullanıcı house_number girince arka plandaki postcode lookup
-      // cevabı alanı SİLEBİLİYOR. Yapışana kadar doğrula-yeniden-doldur.
+      // Defect: the async postcode lookup can wipe the house_number the user just
+      // typed. Verify-and-refill until the value sticks.
       await checkout.houseNumber.fill('12');
       await checkout.houseNumber.blur();
       let wiped = false;
@@ -121,7 +121,7 @@ test.describe('Checkout', () => {
       if (wiped) {
         testInfo.annotations.push({
           type: 'bug-candidate',
-          description: 'Billing: kullanıcının girdiği house_number, asenkron postcode lookup tarafından siliniyor.',
+          description: 'Billing: the user-typed house_number gets wiped by the async postcode lookup.',
         });
       }
 
@@ -209,7 +209,7 @@ test.describe('Checkout', () => {
 
       await checkout.paymentMethod.selectOption('gift-card');
       await expect(checkout.giftCardNumber).toBeVisible();
-      // Kural: gift card numarası tam 16 harf/rakam olmalı.
+      // Rule: the gift card number must be exactly 16 letters/digits.
       await checkout.giftCardNumber.fill('1234567890123456');
       await checkout.validationCode.fill('1234');
       await checkout.finishBtn.click();
@@ -249,7 +249,7 @@ test.describe('Checkout', () => {
       await checkout.payWith('cash-on-delivery');
       await expect(checkout.successMessage).toHaveText('Payment was successful', { timeout: 15_000 });
 
-      // İki fazlı akış: ikinci Confirm misafir siparişini yaratır.
+      // Two-phase flow: the second Confirm places the guest order.
       const invoiceResponse = page.waitForResponse(
         (r) => r.url().includes('/invoices') && r.request().method() === 'POST',
       );
@@ -270,7 +270,7 @@ test.describe('Checkout', () => {
       await checkout.signInDuringCheckout(testUser.email, testUser.password);
       await checkout.proceed2.click();
 
-      // Lookup'ın doldurduğunu görmek için adres alanları önce temizlenir.
+      // Clear the address fields first so the lookup autofill is observable.
       await checkout.street.fill('');
       await checkout.city.fill('');
       await checkout.state.fill('');
@@ -315,9 +315,9 @@ test.describe('Checkout', () => {
       await reachPayment({ home, productPage, checkout, page }, testUser, stockProduct.name);
       const unitTotal = money(await checkout.cartTotal.textContent().catch(() => null));
 
-      // Bulgu: wizard adım göstergesi tıklanabilir görünse de geriye navigasyon yapmıyor;
-      // nav'daki sepet linki de aynı route olduğu için Angular'da işlemsiz. Cart adımına
-      // dönüşün güvenilir yolu tam sayfa yenileme (wizard sepeti koruyarak baştan başlar).
+      // The step indicator looks clickable but does not navigate back, and the nav
+      // cart link is a same-route no-op; a full reload reliably restarts the wizard
+      // at the cart step while keeping the cart.
       await page.reload();
       await expect(checkout.productQuantity).toBeVisible();
 

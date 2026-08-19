@@ -1,9 +1,9 @@
 import { Locator } from '@playwright/test';
 import { BasePage } from './base.page';
 
-/** /checkout tek sayfa 4 adımlı sihirbaz: CART → SIGN IN → BILLING → PAYMENT */
+/** /checkout is a single-page four-step wizard: CART → SIGN IN → BILLING → PAYMENT. */
 export class CheckoutPage extends BasePage {
-  // Adım 1 — Cart
+  // Step 1 — Cart
   readonly productTitle: Locator = this.page.getByTestId('product-title');
   readonly productQuantity: Locator = this.page.getByTestId('product-quantity');
   readonly productPrice: Locator = this.page.getByTestId('product-price');
@@ -12,7 +12,7 @@ export class CheckoutPage extends BasePage {
   readonly continueShopping: Locator = this.page.getByTestId('continue-shopping');
   readonly proceed1: Locator = this.page.getByTestId('proceed-1');
 
-  // Adım 2 — Sign in / Guest
+  // Step 2 — Sign in / Guest
   readonly loginEmail: Locator = this.page.getByTestId('email');
   readonly loginPassword: Locator = this.page.getByTestId('password');
   readonly loginSubmit: Locator = this.page.getByTestId('login-submit');
@@ -22,7 +22,7 @@ export class CheckoutPage extends BasePage {
   readonly guestSubmit: Locator = this.page.getByTestId('guest-submit');
   readonly proceed2: Locator = this.page.getByTestId('proceed-2');
 
-  // Adım 3 — Billing
+  // Step 3 — Billing
   readonly street: Locator = this.page.getByTestId('street');
   readonly houseNumber: Locator = this.page.getByTestId('house_number');
   readonly city: Locator = this.page.getByTestId('city');
@@ -31,7 +31,7 @@ export class CheckoutPage extends BasePage {
   readonly countrySelect: Locator = this.page.getByTestId('country');
   readonly proceed3: Locator = this.page.getByTestId('proceed-3');
 
-  // Adım 4 — Payment (yöntem seçimine göre dinamik alt alanlar)
+  // Step 4 — Payment (sub-fields depend on the selected method)
   readonly paymentMethod: Locator = this.page.getByTestId('payment-method');
   readonly finishBtn: Locator = this.page.getByTestId('finish');
   readonly successMessage: Locator = this.page.getByTestId('payment-success-message');
@@ -58,13 +58,13 @@ export class CheckoutPage extends BasePage {
   }
 
   async continueAsGuest(email: string, firstName: string, lastName: string): Promise<void> {
-    // Misafir formu ayrı bir sekmede; alanlar sekme açılmadan görünmez.
+    // The guest form lives in a separate tab; its fields are hidden until it opens.
     await this.page.getByRole('tab', { name: 'Continue as Guest' }).click();
     await this.guestEmail.fill(email);
     await this.guestFirstName.fill(firstName);
     await this.guestLastName.fill(lastName);
     await this.guestSubmit.click();
-    // Misafir onayı sonrası "Proceed to checkout" butonu geç render olur; click auto-wait eder.
+    // "Proceed to checkout" renders late after the guest confirmation; click auto-waits.
     await this.proceed2
       .or(this.page.getByRole('button', { name: /proceed to checkout/i }))
       .first()
@@ -72,9 +72,9 @@ export class CheckoutPage extends BasePage {
   }
 
   /**
-   * Billing formunu güvenilir şekilde doldurur. Ülke değişimi adres alanlarını asenkron
-   * temizleyebildiği için ülke ÖNCE seçilir; ardından değerler doğrulanıp gerekirse
-   * yeniden yazılır (house_number UI'da zorunlu — bilinen API/UI tutarsızlığı).
+   * Fills the billing form reliably. Changing the country can asynchronously
+   * clear the address fields, so the country is selected first; values are then
+   * verified and re-typed if needed (house_number is required by the UI only).
    */
   async fillBillingDefaults(d: {
     street: string;

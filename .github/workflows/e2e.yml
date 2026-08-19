@@ -1,13 +1,12 @@
-# Toolshop E2E — CI (hermetik)
+# Toolshop E2E — hermetic CI
 #
-# Public demo Cloudflare bot korumasıyla datacenter IP'lerine insan-doğrulaması
-# gösteriyor → GitHub runner'larından UI testleri koşulamaz. Bu yüzden CI,
-# uygulamayı upstream'in prebuilt docker imajlarıyla runner içinde ayağa kaldırır
-# ve testleri localhost'a koşar. Bonus: saat-başı DB reset'i ve paylaşılan
-# stok/rate-limit sorunları CI'da tamamen ortadan kalkar.
+# The public demo serves a Cloudflare human-verification challenge to datacenter
+# IPs, so browser tests cannot target it from GitHub-hosted runners. CI therefore
+# boots the application under test inside the runner (upstream prebuilt images)
+# and runs the suite against localhost.
 #
-# - push/PR: smoke (chromium, 14 test)
-# - nightly (01:25 UTC) + manuel: tam 122 testlik suite; HTML rapor GitHub Pages'a
+# - push/PR: smoke suite (chromium)
+# - nightly (01:25 UTC) + manual: full suite; HTML report published to GitHub Pages
 name: E2E Tests
 
 on:
@@ -19,7 +18,7 @@ on:
   workflow_dispatch:
 
 env:
-  # 127.0.0.1: runner'da localhost ::1'e çözülüp Docker'ın IPv4 port yayınını ıskalayabiliyor
+  # 127.0.0.1: on the runner, localhost can resolve to ::1 and miss Docker's IPv4 port binding
   BASE_URL: http://127.0.0.1:4200
   API_URL: http://127.0.0.1:8091
   DISABLE_LOGGING: 'true'
@@ -36,8 +35,8 @@ jobs:
         with:
           repository: testsmith-io/practice-software-testing
           path: sut
-      # Upstream'in web (nginx) imajı yalnız arm64 yayınlanmış — x86_64 runner'da
-      # "exec format error" ile çakılıyor; QEMU emülasyonu bunu şeffaf çözer.
+      # The upstream web (nginx) image is published arm64-only and crashes on the
+      # x86_64 runner (exec format error); QEMU emulation handles it transparently.
       - uses: docker/setup-qemu-action@v3
       - name: Start the application (prebuilt images)
         working-directory: sut
@@ -64,14 +63,14 @@ jobs:
           ok=0
           for i in $(seq 1 60); do curl -sf http://127.0.0.1:8091/status > /dev/null && ok=1 && break; sleep 3; done
           if [ "$ok" != "1" ]; then
-            echo "::error::API 8091 ayağa kalkmadı"; docker compose -f docker-compose.prod.yml ps
+            echo "::error::API on 8091 did not come up"; docker compose -f docker-compose.prod.yml ps
             docker compose -f docker-compose.prod.yml logs web laravel-api --tail 60; exit 1
           fi
           curl -sf http://127.0.0.1:8091/status
           ok=0
           for i in $(seq 1 90); do curl -sf -o /dev/null http://127.0.0.1:4200 && ok=1 && break; sleep 3; done
           if [ "$ok" != "1" ]; then
-            echo "::error::UI 4200 ayağa kalkmadı"; docker compose -f docker-compose.prod.yml ps
+            echo "::error::UI on 4200 did not come up"; docker compose -f docker-compose.prod.yml ps
             docker compose -f docker-compose.prod.yml logs angular-ui --tail 60; exit 1
           fi
           echo "UI up"
@@ -101,8 +100,8 @@ jobs:
         with:
           repository: testsmith-io/practice-software-testing
           path: sut
-      # Upstream'in web (nginx) imajı yalnız arm64 yayınlanmış — x86_64 runner'da
-      # "exec format error" ile çakılıyor; QEMU emülasyonu bunu şeffaf çözer.
+      # The upstream web (nginx) image is published arm64-only and crashes on the
+      # x86_64 runner (exec format error); QEMU emulation handles it transparently.
       - uses: docker/setup-qemu-action@v3
       - name: Start the application (prebuilt images)
         working-directory: sut
@@ -129,18 +128,18 @@ jobs:
           ok=0
           for i in $(seq 1 60); do curl -sf http://127.0.0.1:8091/status > /dev/null && ok=1 && break; sleep 3; done
           if [ "$ok" != "1" ]; then
-            echo "::error::API 8091 ayağa kalkmadı"; docker compose -f docker-compose.prod.yml ps
+            echo "::error::API on 8091 did not come up"; docker compose -f docker-compose.prod.yml ps
             docker compose -f docker-compose.prod.yml logs web laravel-api --tail 60; exit 1
           fi
           curl -sf http://127.0.0.1:8091/status
           ok=0
           for i in $(seq 1 90); do curl -sf -o /dev/null http://127.0.0.1:4200 && ok=1 && break; sleep 3; done
           if [ "$ok" != "1" ]; then
-            echo "::error::UI 4200 ayağa kalkmadı"; docker compose -f docker-compose.prod.yml ps
+            echo "::error::UI on 4200 did not come up"; docker compose -f docker-compose.prod.yml ps
             docker compose -f docker-compose.prod.yml logs angular-ui --tail 60; exit 1
           fi
           echo "UI up"
-      # @visual baseline'ları platforma özgü (macOS'ta üretildi) → CI'da atlanır
+      # @visual baselines are platform-specific (generated on macOS), so CI skips them
       - run: npx playwright test --grep-invert "@visual"
       - uses: actions/upload-artifact@v4
         if: always()

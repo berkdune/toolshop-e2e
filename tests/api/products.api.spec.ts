@@ -43,7 +43,7 @@ test.describe('API Products', () => {
     async ({ api }) => {
       const tree: CategoryNode[] = await (await api.http.get('/categories/tree')).json();
       const pliers = findCategory(tree, 'Pliers');
-      expect(pliers, 'Pliers kategorisi ağaçta bulunamadı').toBeTruthy();
+      expect(pliers, 'Pliers category not found in the tree').toBeTruthy();
 
       const res = await api.http.get(`/products?by_category=${pliers!.id}&between=price,1,15&sort=price,asc`);
       expect(res.status()).toBe(200);
@@ -57,7 +57,7 @@ test.describe('API Products', () => {
       }
       expect([...prices].sort((a, b) => a - b)).toEqual(prices);
 
-      // Kategori doğrulaması: ilk ürünün detayı Pliers kategorisini içermeli.
+      // Category check: the first product's detail must reference the Pliers category.
       const detail = await (await api.http.get(`/products/${items[0].id}`)).json();
       expect(JSON.stringify(detail)).toContain('Pliers');
     },
@@ -118,7 +118,7 @@ test.describe('API Products', () => {
       expect(tree.length).toBeGreaterThan(0);
 
       const handTools = findCategory(tree, 'Hand Tools');
-      expect(handTools, 'Hand Tools kök kategorisi bulunamadı').toBeTruthy();
+      expect(handTools, 'Hand Tools root category not found').toBeTruthy();
       const children = handTools!.sub_categories ?? handTools!.children ?? [];
       expect(children.map((c) => c.name)).toContain('Pliers');
     },

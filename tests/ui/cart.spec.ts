@@ -50,7 +50,7 @@ test.describe('Cart', () => {
 
       await checkout.goto();
       await expect(checkout.productTitle).toBeVisible();
-      // Satır silme kontrolünün data-test'i yok; satır sonundaki kırmızı buton.
+      // The row delete control has no data-test; it is the red button at the row end.
       await page.locator('table tbody tr').first().locator('a.btn-danger').click();
 
       await expect(checkout.productTitle).toBeHidden();

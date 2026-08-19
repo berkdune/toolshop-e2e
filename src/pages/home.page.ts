@@ -19,14 +19,14 @@ export class HomePage extends BasePage {
   async searchFor(term: string): Promise<void> {
     await this.searchQuery.fill(term);
     await this.searchSubmit.click();
-    // Uygulama arama bitince bu işaret öğesini basıyor — deterministik bekleme.
+    // The app renders this marker when a search completes — a deterministic wait.
     await this.page.getByTestId('search_completed').waitFor();
   }
 
   /**
-   * Paylaşılan demoda ID'ler değişebilir; ürüne her zaman arama üzerinden gidilir.
-   * Önce TAM ad eşleşmesi denenir ("Pliers" substring'i "Combination Pliers"ı da yakalar);
-   * uzun adlar kartta kırpılabildiği için prefix fallback'i vardır.
+   * IDs change on demo resets, so products are always opened via search.
+   * An exact-name match is tried first ("Pliers" would substring-match
+   * "Combination Pliers"); long names can be truncated on cards, hence the prefix fallback.
    */
   async openProduct(name: string): Promise<void> {
     await this.searchFor(name);

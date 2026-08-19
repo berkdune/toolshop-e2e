@@ -21,7 +21,7 @@ export class ProductPage extends BasePage {
 
   async addToCart(): Promise<void> {
     await this.addToCartBtn.click();
-    // Sepet yazımı asenkron; badge görünmeden navigasyon boş sepete yarışabilir.
+    // The cart write is async; navigating before the badge shows races an empty cart.
     await this.cartBadge.waitFor();
   }
 }

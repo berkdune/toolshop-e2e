@@ -31,7 +31,7 @@ test.describe('Account', () => {
       await page.getByTestId('update-profile-submit').click();
       await expect(page.getByText(/successfully|updated/i).first()).toBeVisible({ timeout: 10_000 }).catch(() => {});
 
-      // Reload sonrası form /users/me'den asenkron dolar; toHaveValue kendisi bekler.
+      // After a reload the form fills asynchronously from /users/me; toHaveValue retries.
       await page.reload();
       await expect(page.getByTestId('phone')).toHaveValue('05559998877', { timeout: 10_000 });
       await expect(page.getByTestId('street')).toHaveValue('Updated Street 7');
@@ -49,8 +49,8 @@ test.describe('Account', () => {
       await page.getByTestId('first-name').fill('');
       await page.getByTestId('first-name').blur();
       await page.getByTestId('update-profile-submit').click();
-      // Boş alan ya inline "required" hatası gösterir ya da submit'i işlemsiz bırakır;
-      // asıl değişmez: değer kalıcı OLMAMALI.
+      // The empty field either shows an inline "required" error or makes submit a
+      // no-op; the real invariant is that the value must not persist.
       const requiredShown = await page.getByText(/required/i).first().isVisible().catch(() => false);
       if (!requiredShown) await expect(page.getByText(/successfully|updated/i)).toBeHidden();
 
@@ -66,18 +66,18 @@ test.describe('Account', () => {
       const newPassword = buildPassword();
       await injectSession(page, await api.login(testUser.email, testUser.password));
       await page.goto('/account/profile');
-      // Form /users/me gelince resetleniyor; veri dolmadan yazılan değerler siliniyor → önce bekle.
+      // The form resets when /users/me arrives; anything typed earlier is wiped — wait first.
       await expect(page.getByTestId('email')).toHaveValue(testUser.email, { timeout: 10_000 });
 
-      // Angular form validity blur ister; blur'suz submit isteği hiç atılmıyor.
+      // Angular form validity needs blur; without it the submit never fires a request.
       await page.getByTestId('current-password').fill(testUser.password);
       await page.getByTestId('current-password').blur();
       await page.getByTestId('new-password').fill(newPassword);
       await page.getByTestId('new-password').blur();
       await page.getByTestId('new-password-confirm').fill(newPassword);
       await page.getByTestId('new-password-confirm').blur();
-      // Dikkat: yeni şifreyi poll'la denemek, değişiklik uygulanana dek başarısız login
-      // sayılıp hesabı kilitler (423). Önce API yanıtını bekle, sonra TEK deneme yap.
+      // Polling the new password counts as failed logins until the change lands and
+      // locks the account (423). Wait for the API response, then try exactly once.
       const changeResponse = page.waitForResponse(
         (r) => r.url().includes('/users/change-password') && r.request().method() === 'POST',
       );
@@ -104,7 +104,7 @@ test.describe('Account', () => {
       await page.getByTestId('change-password-submit').click();
 
       await expect(page.locator('.alert, [role="alert"]').first()).toBeVisible();
-      // Şifre değişmemiş olmalı.
+      // The password must be unchanged.
       expect((await api.loginRaw(testUser.email, testUser.password)).status()).toBe(200);
     },
   );
@@ -153,7 +153,7 @@ test.describe('Account', () => {
       const download = page.getByTestId('download-invoice');
       await expect(download).toBeVisible();
 
-      // PDF üretimi asenkron (NOT_INITIATED → INITIATED → COMPLETED); demo'da yavaş olabilir.
+      // PDF generation is async (NOT_INITIATED → INITIATED → COMPLETED) and can be slow on the demo.
       let completed = false;
       for (let i = 0; i < 20; i++) {
         const res = await api.http.get(`/invoices/${invoice.invoice_number}/download-pdf-status`, {
@@ -175,7 +175,7 @@ test.describe('Account', () => {
       } else {
         testInfo.annotations.push({
           type: 'partial',
-          description: 'Demo ortamında PDF üretimi 60sn içinde COMPLETED olmadı; buton hazır-olana-dek-disabled davranışı doğrulandı.',
+          description: 'PDF generation did not reach COMPLETED within 60s on the demo; the disabled-until-ready behavior was verified.',
         });
         await expect(download).toBeDisabled();
       }
@@ -197,7 +197,7 @@ test.describe('Account', () => {
       await page.goto('/account/messages');
       const row = page.locator('table tbody tr').first();
       await expect(row).toBeVisible();
-      await expect(row).toContainText(/webmaster/i); // listede subject küçük harfle görünüyor
+      await expect(row).toContainText(/webmaster/i); // the list shows the subject lowercased
     },
   );
 
@@ -209,11 +209,11 @@ test.describe('Account', () => {
       await injectSession(page, token);
       await page.goto('/account/profile');
 
-      // Secret asenkron render ediliyor; önce dolmasını bekle.
+      // The secret renders asynchronously; wait for it to fill first.
       await expect(page.getByTestId('totp-secret')).toHaveText(/[A-Z2-7]{16,}/, { timeout: 10_000 });
       const secretText = (await page.getByTestId('totp-secret').textContent()) ?? '';
       const secret = secretText.match(/[A-Z2-7]{16,}/)?.[0];
-      expect(secret, `TOTP secret bulunamadı: "${secretText}"`).toBeTruthy();
+      expect(secret, `TOTP secret not found: "${secretText}"`).toBeTruthy();
 
       await page.getByTestId('totp-code').fill(authenticator.generate(secret!));
       await page.getByTestId('verify-totp').click();
@@ -230,9 +230,9 @@ test.describe('Account', () => {
       await page.goto('/account');
       await expect(page.getByTestId('page-title')).toContainText('My account');
 
-      // Süresi dolmuş oturumu, token'ı geçersizleştirerek deterministik simüle ediyoruz.
-      // Gözlenen davranış: geçersiz token'da uygulama korumalı sayfadan ana sayfaya atar
-      // ve oturum düşer (nav yeniden "Sign in" gösterir) → yeniden kimlik doğrulama gerekir.
+      // Simulate an expired session deterministically by invalidating the token.
+      // Observed behavior: the app redirects away from the protected page and drops
+      // the session (the nav shows "Sign in" again).
       await page.evaluate(() => localStorage.setItem('auth-token', 'expired.invalid.token'));
       await page.goto('/account/invoices');
       await expect(page).not.toHaveURL(/\/account\/invoices/, { timeout: 10_000 });

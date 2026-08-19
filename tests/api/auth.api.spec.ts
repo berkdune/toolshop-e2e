@@ -30,7 +30,7 @@ test.describe('API Auth', () => {
     'TC-100 | Auth - Repeated failures lock the account',
     { tag: ['@regression', '@api'] },
     async ({ api, testUser }) => {
-      // Keşif: 4. yanlış denemede 423 dönüyor (ilk 3'ü 401).
+      // The 4th failed attempt returns 423 (the first three return 401).
       const statuses: number[] = [];
       for (let i = 0; i < 5; i++) statuses.push((await api.loginRaw(testUser.email, 'wrong-1!')).status());
       expect(statuses[0]).toBe(401);
@@ -71,11 +71,11 @@ test.describe('API Auth', () => {
       expect(body).toHaveProperty('first_name');
       expect(body).toHaveProperty('last_name');
       expect(JSON.stringify(body.password)).toContain('at least 8 characters');
-      // Gözlem: bozuk e-posta formatı API'de flag'lenmiyor (yalnızca client-side) — bug adayı.
+      // Defect: a malformed email is not flagged server-side (client-side only).
       if (!body.email) {
         testInfo.annotations.push({
           type: 'bug-candidate',
-          description: 'Register API bozuk e-posta formatına validasyon hatası dönmüyor (email anahtarı yok).',
+          description: 'The register API returns no validation error for a malformed email (no email key in the 422 body).',
         });
       }
     },
@@ -164,7 +164,7 @@ test.describe('API Auth', () => {
       const res = await api.http.delete(`/users/${testUser.id}`, { headers: api.bearer(await api.adminToken()) });
       expect(res.status()).toBe(409);
 
-      // Kullanıcı hâlâ giriş yapabilmeli (silinmedi).
+      // The user must still be able to log in (not deleted).
       expect((await api.loginRaw(testUser.email, testUser.password)).status()).toBe(200);
     },
   );

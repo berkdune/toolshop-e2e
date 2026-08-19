@@ -9,7 +9,7 @@ export abstract class BasePage {
   get navSignIn(): Locator {
     return this.page.getByTestId('nav-sign-in');
   }
-  /** Login sonrası kullanıcı adının göründüğü menü. */
+  /** User-name menu shown after login. */
   get navUserMenu(): Locator {
     return this.page.getByTestId('nav-menu');
   }

@@ -16,21 +16,21 @@ export interface TestUser {
   id?: string;
 }
 
-/** Paralel worker'lar aynı milisaniyeyi paylaşabilir → ada rastgele ek şart. */
+/** Parallel workers can share the same millisecond — add randomness to names. */
 export function uniqueStamp(): string {
   return `${Date.now()}${faker.string.numeric(4)}`;
 }
 
-// Şifre politikası bilinen-sızıntı kontrolü içeriyor (HIBP tarzı) → her şifre rastgele üretilir.
-// Sabit parçalar büyük/küçük harf, rakam ve sembol sınıflarını garanti eder.
+// The password policy includes a known-breach check (HIBP-style), so every
+// password is random; the fixed parts guarantee the required character classes.
 export function buildPassword(): string {
   return `E2e!${faker.string.alphanumeric({ length: 12 })}7q`;
 }
 
-// Test hesapları bu desenle işaretlenir: paylaşılan demoda artıklar tanınabilir kalır
-// ve teardown'da admin token'ıyla best-effort silinir (faturalı kullanıcı 409 → tolere edilir).
-// Adres varsayılanı NL/Laren: invoice API'si city↔country geo-doğrulaması yapıyor ve
-// TR kombinasyonları (Izmir/İzmir) 422 dönüyor; bu set sitenin kendi postcode-lookup çıktısı.
+// Test accounts follow this pattern so leftovers stay recognizable on the shared
+// demo and can be cleaned up with an admin token. The default address is the NL
+// set returned by the app's own postcode lookup: the invoice API geo-validates
+// city/country pairs and rejects the TR combinations.
 export function buildUser(): TestUser {
   const stamp = `${Date.now()}${faker.string.numeric(4)}`;
   return {

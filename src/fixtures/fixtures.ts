@@ -17,9 +17,9 @@ interface Fixtures {
   checkout: CheckoutPage;
   admin: AdminDashboardPage;
   api: ApiClient;
-  /** API'den yaratılan taze kullanıcı; test sonrası admin token'ıyla best-effort silinir. */
+  /** Fresh API-provisioned user; best-effort deleted with the admin token afterwards. */
   testUser: TestUser;
-  /** Sipariş/sepet akışları için STOKTA olan bir ürün (paylaşılan demoda stok tükenebilir). */
+  /** An in-stock product for cart/order flows (shared demo stock can run out). */
   stockProduct: { id: string; name: string; price: number };
 }
 

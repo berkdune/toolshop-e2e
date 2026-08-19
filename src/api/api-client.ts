@@ -2,7 +2,7 @@ import { APIRequestContext, APIResponse } from '@playwright/test';
 import { config } from '../config';
 import { TestUser } from '../utils/data-factory';
 
-// JWT ~5 dk geçerli; admin token'ı worker içinde 4 dk'ya kadar cache'lenir.
+// JWTs live ~5 minutes; cache the admin token for up to 4 minutes per worker.
 let adminTokenCache: { token: string; at: number } | undefined;
 
 export class ApiClient {
@@ -14,8 +14,8 @@ export class ApiClient {
       last_name: user.lastName,
       address: {
         street: user.street,
-        // API house_number'ı null kabul eder (UI checkout'ta zorunlu — bilinen tutarsızlık);
-        // boş string yollamak yerine null'a çevrilir ki TC-054 gibi senaryolar kurulabilsin.
+        // The API accepts a null house_number (the checkout UI requires one);
+        // send null instead of an empty string so such cases can be set up.
         house_number: user.houseNumber || null,
         city: user.city,
         state: user.state,
@@ -34,14 +34,14 @@ export class ApiClient {
   }
 
   async register(user: TestUser): Promise<string> {
-    // Suite başında tüm worker'lar aynı anda kayıt açar; paylaşılan demo bunu
-    // throttle edebiliyor → geçici hatalarda kısa backoff'lu retry.
+    // All workers register at suite start and the shared demo may throttle
+    // this, so transient failures retry with a short backoff.
     let lastError = '';
     for (let attempt = 1; attempt <= 3; attempt++) {
       const res = await this.registerRaw(user);
       if (res.status() === 201) return (await res.json()).id as string;
       lastError = `${res.status()} ${await res.text()}`;
-      if (res.status() < 500 && res.status() !== 429) break; // kalıcı hata, retry anlamsız
+      if (res.status() < 500 && res.status() !== 429) break; // permanent error, retrying won't help
       await new Promise((r) => setTimeout(r, 1500 * attempt));
     }
     throw new Error(`register failed: ${lastError}`);
@@ -65,14 +65,14 @@ export class ApiClient {
     return adminTokenCache.token;
   }
 
-  /** Best-effort cleanup: faturası olan kullanıcı 409 döner, sessizce tolere edilir. */
+  /** Best-effort cleanup: users with invoices return 409, which is tolerated. */
   async tryDeleteUser(id?: string): Promise<void> {
     if (!id) return;
     try {
       const token = await this.adminToken();
       await this.http.delete(`/users/${id}`, { headers: { Authorization: `Bearer ${token}` } });
     } catch {
-      /* cleanup asla testi düşürmez */
+      /* cleanup must never fail a test */
     }
   }
 
@@ -85,7 +85,7 @@ export class ApiClient {
       const users: Array<{ id: string }> = (await res.json()).data ?? [];
       for (const u of users) await this.tryDeleteUser(u.id);
     } catch {
-      /* cleanup asla testi düşürmez */
+      /* cleanup must never fail a test */
     }
   }
 
@@ -98,17 +98,17 @@ export class ApiClient {
     return res.json();
   }
 
-  /** Katalogdan bir ürün döndürür (paylaşılan demoda ID'ler reset'le değişir — her seferinde taze çözülür). */
+  /** Resolves a product from the catalog (IDs change on every demo reset). */
   async findProduct(query = 'pliers'): Promise<{ id: string; name: string; price: number }> {
     const res = await this.http.get(`/products/search?q=${encodeURIComponent(query)}`);
     const item = (await res.json()).data[0];
-    if (!item) throw new Error(`ürün bulunamadı: ${query}`);
+    if (!item) throw new Error(`product not found: ${query}`);
     return { id: item.id, name: item.name, price: Number(item.price) };
   }
 
   /**
-   * STOKTA olan (in_stock=true, rental olmayan) ilk N ürünü döndürür.
-   * Paylaşılan demoda siparişler stok tüketir; sabit ürün adına bağlanmak suite'i çökertir.
+   * Returns the first N in-stock, non-rental products. Orders drain the shared
+   * stock, so binding to a fixed product name would break the suite.
    */
   async findInStockProducts(count = 1): Promise<Array<{ id: string; name: string; price: number }>> {
     const found: Array<{ id: string; name: string; price: number }> = [];
@@ -123,7 +123,7 @@ export class ApiClient {
       }
       if (!items.length) break;
     }
-    if (found.length < count) throw new Error(`stokta yeterli ürün yok (istenen ${count}, bulunan ${found.length})`);
+    if (found.length < count) throw new Error(`not enough in-stock products (wanted ${count}, found ${found.length})`);
     return found;
   }
 
@@ -134,7 +134,7 @@ export class ApiClient {
     return cart.id as string;
   }
 
-  /** Geo-doğrulamadan geçtiği kanıtlanmış NL fatura adresi (sitenin postcode-lookup çıktısı). */
+  /** NL billing address that passes the API's geo validation (from the app's own postcode lookup). */
   nlBilling() {
     return {
       billing_street: 'van den Pollaan',
@@ -145,7 +145,7 @@ export class ApiClient {
     };
   }
 
-  /** Token sahibi kullanıcı için API'den sipariş oluşturur; invoice gövdesini döndürür. */
+  /** Creates an order via the API for the token's user; returns the invoice body. */
   async createInvoice(
     token: string,
     opts: { quantity?: number; paymentMethod?: string; productQuery?: string } = {},
@@ -167,7 +167,7 @@ export class ApiClient {
     return res.json();
   }
 
-  /** Admin token'ıyla API'den ürün yaratır (admin UI testlerine hızlı fixture). */
+  /** Creates a product via the API using the admin token (fast fixture for admin UI tests). */
   async createProduct(name: string, opts: { brandId?: string } = {}): Promise<{ id: string; name: string }> {
     const token = await this.adminToken();
     const [brands, categories, images] = await Promise.all([
@@ -206,7 +206,7 @@ export class ApiClient {
       const token = await this.adminToken();
       await this.http.delete(`/products/${id}`, { headers: this.bearer(token) });
     } catch {
-      /* cleanup asla testi düşürmez */
+      /* cleanup must never fail a test */
     }
   }
 
@@ -216,7 +216,7 @@ export class ApiClient {
       const token = await this.adminToken();
       await this.http.delete(`/brands/${id}`, { headers: this.bearer(token) });
     } catch {
-      /* cleanup asla testi düşürmez */
+      /* cleanup must never fail a test */
     }
   }
 }

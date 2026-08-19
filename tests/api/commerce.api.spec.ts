@@ -67,7 +67,7 @@ test.describe('API Commerce', () => {
     'TC-118 | Invoices - Guest order creation',
     { tag: ['@regression', '@api'] },
     async ({ api }) => {
-      // Misafir UI akışının gerçek sözleşmesi (sniff ile doğrulandı):
+      // The actual guest checkout contract:
       // POST /invoices/guest + billing + guest_email/guest_first_name/guest_last_name.
       const product = (await api.findInStockProducts(1))[0];
       const cartId = await api.createCartWithProduct(product.id, 1);
@@ -104,15 +104,15 @@ test.describe('API Commerce', () => {
         return { code: res.status(), state: ((await res.json().catch(() => ({}))) as { status?: string }).status };
       };
 
-      // Başlangıç: NOT_INITIATED (HTTP 400 ile raporlanıyor).
+      // Initial state: NOT_INITIATED (reported with HTTP 400).
       const first = await status();
       expect(['NOT_INITIATED', 'INITIATED', 'COMPLETED']).toContain(first.state);
 
-      // INITIATED'a geçmeli.
+      // It must transition to INITIATED.
       await expect.poll(async () => (await status()).state, { timeout: 45_000, intervals: [3000] })
         .toMatch(/INITIATED|COMPLETED/);
 
-      // COMPLETED olursa PDF inmeli; demo'da kuyruk yavaşsa kısmi geçiş notu düş.
+      // If it reaches COMPLETED the PDF must download; annotate when the demo queue is slow.
       let completed = false;
       for (let i = 0; i < 15; i++) {
         if ((await status()).state === 'COMPLETED') { completed = true; break; }
@@ -127,7 +127,7 @@ test.describe('API Commerce', () => {
       } else {
         testInfo.annotations.push({
           type: 'partial',
-          description: 'Demo PDF kuyruğu 60sn içinde COMPLETED olmadı; NOT_INITIATED→INITIATED durum makinesi doğrulandı.',
+          description: 'The demo PDF queue did not reach COMPLETED within 60s; the NOT_INITIATED→INITIATED state machine was verified.',
         });
       }
     },

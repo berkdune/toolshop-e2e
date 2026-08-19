@@ -3,14 +3,14 @@ import { Page, TestInfo } from '@playwright/test';
 import { test, expect } from '../../src/fixtures/fixtures';
 
 /**
- * Bilinen erişilebilirlik ihlalleri (axe rule id bazında): bug adayı olarak
- * raporlandı; test bunları tolere eder ve YENİ ihlal gelmesin diye bekçilik eder.
+ * Known accessibility violations by axe rule id, reported as defects.
+ * The tests tolerate these and guard against any new violations.
  */
 const KNOWN_VIOLATIONS: Record<string, string[]> = {
-  // 'list': kategori filtre ağacında <ul> doğrudan <ul> içeriyor (serious, 3 node)
+  // 'list': the category filter tree nests <ul> directly inside <ul> (serious, 3 nodes)
   home: ['list'],
-  // 'button-name': erişilebilir adı olmayan ikon butonu (critical, 1 node)
-  // 'list': şifre gereksinim listesinde li olmayan doğrudan çocuk (serious, 1 node)
+  // 'button-name': icon button without an accessible name (critical, 1 node)
+  // 'list': non-<li> direct child in the password-requirements list (serious, 1 node)
   login: ['button-name', 'list'],
   register: ['button-name', 'list'],
   product: [],
@@ -30,7 +30,7 @@ async function expectNoNewA11yViolations(page: Page, key: string, testInfo: Test
   const known = KNOWN_VIOLATIONS[key] ?? [];
   for (const id of known) {
     if (seriousOrWorse.some((v) => v.id === id)) {
-      testInfo.annotations.push({ type: 'known-a11y-issue', description: `${key}: ${id} (bug adayı olarak raporlandı)` });
+      testInfo.annotations.push({ type: 'known-a11y-issue', description: `${key}: ${id} (reported as a defect)` });
     }
   }
   const unexpected = seriousOrWorse.filter((v) => !known.includes(v.id));
@@ -83,8 +83,8 @@ test.describe('Quality', () => {
     },
   );
 
-  // Görsel regresyon örnekleri: baseline'lar platforma özgüdür (macOS'ta üretildi)
-  // ve CI'da --grep-invert @visual ile atlanır; statik sayfalar seçildi.
+  // Visual regression examples on static pages. Baselines are platform-specific
+  // (generated on macOS), so CI skips these via --grep-invert @visual.
   test(
     'TC-127 | Visual - Login page matches the approved baseline',
     { tag: ['@regression', '@visual'] },
