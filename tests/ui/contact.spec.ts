@@ -40,15 +40,21 @@ test.describe('Contact', () => {
     async ({ page, api, testUser }, testInfo) => {
       await injectSession(page, await api.login(testUser.email, testUser.password));
       await page.goto('/contact');
+      await expect(page.getByTestId('subject')).toBeVisible();
 
-      // Bulgu: oturum açık olsa da form kimlik alanlarını prefill ETMİYOR (alanlar boş).
-      if ((await page.getByTestId('email').inputValue()) === '') {
+      // Sürüm farkı: yayındaki v5.0 oturumda kimlik alanlarını BOŞ gösteriyor (prefill yok
+      // — bulgu); upstream main build'i ise alanları tamamen gizliyor. İkisini de kabul et.
+      const identityVisible = await page.getByTestId('first-name').isVisible().catch(() => false);
+      if (identityVisible) {
         testInfo.annotations.push({
           type: 'finding',
-          description: 'Contact formu oturum açık kullanıcıda ad/e-posta prefill etmiyor; mesaj yine de hesaba bağlanıyor.',
+          description: 'Contact formu oturum açık kullanıcıda kimlik alanlarını boş gösteriyor (prefill yok); mesaj yine de hesaba bağlanıyor.',
         });
+        await fillContactForm(page, testUser.email);
+      } else {
+        await page.getByTestId('subject').selectOption({ label: 'Customer service' });
+        await page.getByTestId('message').fill(LONG_MESSAGE);
       }
-      await fillContactForm(page, testUser.email);
       await page.getByTestId('contact-submit').click();
       await expect(page.getByText(/thanks|success/i).first()).toBeVisible({ timeout: 10_000 });
 
