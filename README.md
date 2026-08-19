@@ -78,10 +78,13 @@ No configuration needed — defaults target the public demo. Override via `.env`
 | Angular forms reset when late data arrives; in-flight requests die on navigation | "Form is populated" anchors before typing; `submitAndWait()` blocks until the API responds |
 | Password policy rejects breached passwords (HIBP-style) | Random, class-complete generated passwords |
 
-## CI
+## CI — hermetic by design
 
-- **Push / PR** → smoke suite on chromium.
+The public demo sits behind **Cloudflare bot protection** that serves an interactive "verify you are human" challenge to datacenter IPs — so browser tests cannot (and should not try to) run against it from GitHub-hosted runners. Instead, CI is **hermetic**: the workflow boots the application under test inside the runner using the upstream project's prebuilt Docker images, seeds the database, and runs the suite against `localhost`. This also removes the shared-demo variables (hourly resets, strangers draining stock) from CI entirely.
+
+- **Push / PR** → app boots in Docker → smoke suite on chromium.
 - **Nightly (01:25 UTC) / manual** → full 122-test run; the HTML report (with traces for failures) is published to [GitHub Pages](https://berkdune.github.io/toolshop-e2e/).
+- **Local runs** target the public demo by default (that's where the shared-environment countermeasures above earn their keep); point `BASE_URL`/`API_URL` at a local Docker instance to run hermetically.
 
 ## License
 

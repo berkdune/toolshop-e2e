@@ -1,7 +1,13 @@
-# Toolshop E2E — CI
-# - push/PR: hızlı smoke (chromium, ~1 dk)
-# - nightly + manuel: tam 122 testlik suite; HTML rapor GitHub Pages'a yayınlanır
-# Cron saat başından uzak seçildi: demo DB'si saat başında resetleniyor.
+# Toolshop E2E — CI (hermetik)
+#
+# Public demo Cloudflare bot korumasıyla datacenter IP'lerine insan-doğrulaması
+# gösteriyor → GitHub runner'larından UI testleri koşulamaz. Bu yüzden CI,
+# uygulamayı upstream'in prebuilt docker imajlarıyla runner içinde ayağa kaldırır
+# ve testleri localhost'a koşar. Bonus: saat-başı DB reset'i ve paylaşılan
+# stok/rate-limit sorunları CI'da tamamen ortadan kalkar.
+#
+# - push/PR: smoke (chromium, 14 test)
+# - nightly (01:25 UTC) + manuel: tam 122 testlik suite; HTML rapor GitHub Pages'a
 name: E2E Tests
 
 on:
@@ -12,18 +18,47 @@ on:
     - cron: '25 1 * * *'
   workflow_dispatch:
 
+env:
+  BASE_URL: http://localhost:4200
+  API_URL: http://localhost:8091
+
 jobs:
   smoke:
     if: github.event_name == 'push' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+      - name: Check out the application under test
+        uses: actions/checkout@v4
+        with:
+          repository: testsmith-io/practice-software-testing
+          path: sut
+      - name: Start the application (prebuilt images)
+        working-directory: sut
+        run: docker compose -f docker-compose.prod.yml up --pull missing -d
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      - name: Seed the database
+        working-directory: sut
+        run: |
+          for i in $(seq 1 30); do
+            if docker compose -f docker-compose.prod.yml exec -T laravel-api php artisan migrate:fresh --seed; then exit 0; fi
+            sleep 5
+          done
+          echo "database seed failed"
+          docker compose -f docker-compose.prod.yml logs --tail 80
+          exit 1
+      - name: Wait for API and UI
+        run: |
+          for i in $(seq 1 60); do curl -sf http://localhost:8091/status > /dev/null && break; sleep 3; done
+          curl -sf http://localhost:8091/status
+          for i in $(seq 1 90); do curl -sf -o /dev/null http://localhost:4200 && break; sleep 3; done
+          curl -sf -o /dev/null http://localhost:4200 && echo "UI up"
       - run: npm run test:smoke
       - uses: actions/upload-artifact@v4
         if: failure()
@@ -35,6 +70,7 @@ jobs:
   nightly:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     permissions:
       contents: read
       pages: write
@@ -44,12 +80,36 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - name: Check out the application under test
+        uses: actions/checkout@v4
+        with:
+          repository: testsmith-io/practice-software-testing
+          path: sut
+      - name: Start the application (prebuilt images)
+        working-directory: sut
+        run: docker compose -f docker-compose.prod.yml up --pull missing -d
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      - name: Seed the database
+        working-directory: sut
+        run: |
+          for i in $(seq 1 30); do
+            if docker compose -f docker-compose.prod.yml exec -T laravel-api php artisan migrate:fresh --seed; then exit 0; fi
+            sleep 5
+          done
+          echo "database seed failed"
+          docker compose -f docker-compose.prod.yml logs --tail 80
+          exit 1
+      - name: Wait for API and UI
+        run: |
+          for i in $(seq 1 60); do curl -sf http://localhost:8091/status > /dev/null && break; sleep 3; done
+          curl -sf http://localhost:8091/status
+          for i in $(seq 1 90); do curl -sf -o /dev/null http://localhost:4200 && break; sleep 3; done
+          curl -sf -o /dev/null http://localhost:4200 && echo "UI up"
       - run: npx playwright test
       - uses: actions/upload-artifact@v4
         if: always()
