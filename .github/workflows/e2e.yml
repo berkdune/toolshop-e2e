@@ -82,17 +82,15 @@ jobs:
           path: playwright-report
           retention-days: 7
 
+  # Nightly health gate. The published report (GitHub Pages, `live-report`
+  # branch) comes from a full run against the live deployment instead, where
+  # every documented defect reproduces.
   nightly:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
       contents: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - name: Check out the application under test
@@ -142,33 +140,10 @@ jobs:
       # Gating run — its exit code fails the job on real regressions.
       # (@visual baselines are platform-specific, generated on macOS, so CI skips them.)
       - name: Full suite (gates the job)
-        run: npx playwright test --grep-invert "@visual" --reporter=blob
-      - if: always()
-        run: mkdir -p all-blobs && mv blob-report/*.zip all-blobs/main.zip
-      # Defect reproductions: EXPECTED to fail — live evidence of docs/DEFECTS.md,
-      # shown in red on the very same published report. BUG-003 is skipped here:
-      # the upstream build this job boots no longer exhibits it (fixed after the
-      # deployed v2.4); it still reproduces against the public site.
-      - name: Defect-reproduction suite (expected to fail)
-        if: always()
-        env:
-          DEFECTS: '1'
-        run: npx playwright test --project=defects --grep-invert "BUG-003" --reporter=blob || true
-      - name: Merge both runs into a single report
-        if: always()
-        run: |
-          mv blob-report/*.zip all-blobs/defects.zip
-          npx playwright merge-reports --reporter=html ./all-blobs
+        run: npx playwright test --grep-invert "@visual"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: nightly-report
           path: playwright-report
           retention-days: 14
-      - uses: actions/upload-pages-artifact@v3
-        if: always()
-        with:
-          path: playwright-report
-      - uses: actions/deploy-pages@v4
-        if: always()
-        id: deployment

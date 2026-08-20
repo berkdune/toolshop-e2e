@@ -1,7 +1,7 @@
 # Toolshop E2E — Playwright Test Automation
 
 [![E2E Tests](https://github.com/berkdune/toolshop-e2e/actions/workflows/e2e.yml/badge.svg)](https://github.com/berkdune/toolshop-e2e/actions/workflows/e2e.yml)
-[![Nightly report](https://img.shields.io/badge/nightly%20report-GitHub%20Pages-blue)](https://berkdune.github.io/toolshop-e2e/)
+[![Live report](https://img.shields.io/badge/live%20report-GitHub%20Pages-blue)](https://berkdune.github.io/toolshop-e2e/)
 
 End-to-end **UI + API** test automation for [practicesoftwaretesting.com](https://practicesoftwaretesting.com) (Toolshop, a public e-commerce demo), built with **Playwright + TypeScript**.
 
@@ -33,7 +33,7 @@ The project follows a test-case-first QA workflow: the application was explored 
 
 Every finding is written up as a full defect report (severity, repro steps, evidence, linked tests) in [`docs/DEFECTS.md`](docs/DEFECTS.md).
 
-**Want to watch them fail?** Each defect is also encoded as a reproduction test that asserts the behavior the app *should* have — red by design. They run every night and appear **as failures on the [live report](https://berkdune.github.io/toolshop-e2e/) itself** (open the *Failed* filter): the green tests gate the build, the red ones are the evidence. Seven repros fail there every night; the eighth, BUG-003, no longer reproduces on the upstream build CI boots — the wipe was fixed after the deployed v2.4 — so the nightly defect step skips it. Against the public deployment, `npm run test:defects` still reproduces all 8 (the BUG-003 repro injects lookup latency to make the race deterministic).
+**Want to watch them fail?** Each defect is also encoded as a reproduction test that asserts the behavior the app *should* have — red by design. The [live report](https://berkdune.github.io/toolshop-e2e/) is a full run against the live deployment: **128 green tests and all 8 reproductions in red** (open the *Failed* filter). `npm run test:defects` reproduces them locally; `npm run report:publish` refreshes the published report.
 
 ## Quick start
 
@@ -71,7 +71,7 @@ No configuration needed — defaults target the public demo. Override via `.env`
 │   ├── ui/                   # 103 UI tests across 9 modules (incl. axe a11y + visual examples)
 │   ├── api/                  # 25 API contract tests
 │   └── defects/              # 8 red-by-design defect reproductions (BUG-001..008)
-└── .github/workflows/e2e.yml # smoke on push · full nightly + report to Pages
+└── .github/workflows/e2e.yml # smoke on push · nightly hermetic gate
 ```
 
 ## Surviving a shared demo environment
@@ -90,7 +90,8 @@ No configuration needed — defaults target the public demo. Override via `.env`
 The public demo sits behind **Cloudflare bot protection** that serves an interactive "verify you are human" challenge to datacenter IPs — so browser tests cannot (and should not try to) run against it from GitHub-hosted runners. Instead, CI is **hermetic**: the workflow boots the application under test inside the runner using the upstream project's prebuilt Docker images, seeds the database, and runs the suite against `localhost`. This also removes the shared-demo variables (hourly resets, strangers draining stock) from CI entirely.
 
 - **Push / PR** → app boots in Docker → smoke suite on chromium.
-- **Nightly (01:25 UTC) / manual** → full run (visual tests excluded — their baselines are platform-specific and maintained locally); the HTML report (with traces for failures) is published to [GitHub Pages](https://berkdune.github.io/toolshop-e2e/).
+- **Nightly (01:25 UTC) / manual** → full hermetic run as a health gate (visual tests excluded — their baselines are platform-specific and maintained locally); the report is kept as a build artifact.
+- **Published report** → [GitHub Pages](https://berkdune.github.io/toolshop-e2e/) serves a full run against the live deployment — all 128 tests green plus the 8 defect reproductions in red — refreshed with `npm run report:publish`.
 - **Local runs** target the public demo by default (that's where the shared-environment countermeasures above earn their keep); point `BASE_URL`/`API_URL` at a local Docker instance to run hermetically.
 
 ## Development notes
