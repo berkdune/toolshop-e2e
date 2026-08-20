@@ -31,6 +31,8 @@ The project follows a test-case-first QA workflow: the application was explored 
 | Contact attachments are only accepted when the file is **empty (0 bytes)** ("File should be empty.") | TC-080/081 |
 | Accessibility (axe, WCAG A/AA): icon-only button without an accessible name (**critical**) on auth pages; invalid list markup on the home filters and password-requirements list (**serious**) | TC-123–126 |
 
+Every finding is written up as a full defect report (severity, repro steps, evidence, linked tests) in [`docs/DEFECTS.md`](docs/DEFECTS.md).
+
 ## Quick start
 
 ```bash
@@ -86,6 +88,10 @@ The public demo sits behind **Cloudflare bot protection** that serves an interac
 - **Push / PR** → app boots in Docker → smoke suite on chromium.
 - **Nightly (01:25 UTC) / manual** → full run (visual tests excluded — their baselines are platform-specific and maintained locally); the HTML report (with traces for failures) is published to [GitHub Pages](https://berkdune.github.io/toolshop-e2e/).
 - **Local runs** target the public demo by default (that's where the shared-environment countermeasures above earn their keep); point `BASE_URL`/`API_URL` at a local Docker instance to run hermetically.
+
+## Development notes
+
+Built with AI-assisted tooling (Claude Code). The test strategy, case design, prioritization and engineering decisions are the author's, and every finding above was verified against the live application.
 
 ## License
 
