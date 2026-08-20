@@ -33,7 +33,7 @@ The project follows a test-case-first QA workflow: the application was explored 
 
 Every finding is written up as a full defect report (severity, repro steps, evidence, linked tests) in [`docs/DEFECTS.md`](docs/DEFECTS.md).
 
-**Want to watch them fail?** Each defect is also encoded as a reproduction test that asserts the behavior the app *should* have — so the suite is red by design: run `npm run test:defects`, or open the nightly [live defect report](https://berkdune.github.io/toolshop-e2e/defects/) (8 failing tests, one per bug). The gating suite stays green; the red suite is the evidence.
+**Want to watch them fail?** Each defect is also encoded as a reproduction test that asserts the behavior the app *should* have — so the suite is red by design: run `npm run test:defects` against the public deployment (all 8 fail), or open the nightly [live defect report](https://berkdune.github.io/toolshop-e2e/defects/) from the hermetic CI build — where a repro that passes is a signal of its own (timing-dependent bugs like BUG-003 don't manifest against a localhost lookup). The gating suite stays green; the red suite is the evidence.
 
 ## Quick start
 
