@@ -33,7 +33,7 @@ The project follows a test-case-first QA workflow: the application was explored 
 
 Every finding is written up as a full defect report (severity, repro steps, evidence, linked tests) in [`docs/DEFECTS.md`](docs/DEFECTS.md).
 
-**Want to watch them fail?** Each defect is also encoded as a reproduction test that asserts the behavior the app *should* have — red by design. They run every night and appear **as failures on the [live report](https://berkdune.github.io/toolshop-e2e/) itself** (open the *Failed* filter): the green tests gate the build, the red ones are the evidence. A repro that passes there is a signal of its own — timing-dependent bugs like BUG-003 don't manifest against the hermetic build's localhost lookup. Locally, `npm run test:defects` reproduces all 8 against the public deployment.
+**Want to watch them fail?** Each defect is also encoded as a reproduction test that asserts the behavior the app *should* have — red by design. They run every night and appear **as failures on the [live report](https://berkdune.github.io/toolshop-e2e/) itself** (open the *Failed* filter): the green tests gate the build, the red ones are the evidence. One repro deserves a note: BUG-003 is a race against the postcode lookup's latency, so its test injects a realistic response delay — otherwise a localhost lookup resolves too fast for the wipe to ever happen, and the bug would hide in hermetic CI. Locally, `npm run test:defects` reproduces all 8 against the public deployment.
 
 ## Quick start
 

@@ -277,9 +277,18 @@ test.describe('Checkout', () => {
       await checkout.postalCode.fill('1012JS');
       await checkout.houseNumber.fill('1');
       await page.getByTestId('postcode-lookup-hint').click().catch(() => {});
-      await checkout.state.click();
 
-      await expect(checkout.street).toHaveValue('van den Pollaan', { timeout: 10_000 });
+      // An early lookup response can race the clears above and get wiped by
+      // them, so re-trigger the lookup until the autofill sticks.
+      await expect(async () => {
+        const lookup = page
+          .waitForResponse((r) => r.url().includes('postcode-lookup'), { timeout: 3000 })
+          .catch(() => null);
+        await checkout.postalCode.click();
+        await checkout.state.click();
+        await lookup;
+        await expect(checkout.street).toHaveValue('van den Pollaan', { timeout: 2000 });
+      }).toPass({ timeout: 20_000 });
       await expect(checkout.city).toHaveValue('Laren');
     },
   );

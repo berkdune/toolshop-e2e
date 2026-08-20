@@ -62,6 +62,7 @@ All were observed on the **public deployment** (`practicesoftwaretesting.com`, f
 - **Expected result:** The typed value stays; the Proceed button becomes enabled.
 - **Actual result:** The postcode-lookup request triggered by completing the address resolves asynchronously and **overwrites the form, clearing the house number the user just typed**. The Proceed button flips back to disabled. Intermittent (depends on lookup latency).
 - **Evidence:** Field-state dump captured during automation (value present, then empty with `ng-invalid` after the lookup resolves).
+- **Reproduction note:** the trigger is the lookup's latency, so the repro test injects a realistic response delay via route interception — this makes the wipe deterministic in any environment, including a localhost deployment whose lookup would otherwise resolve before the user finishes typing.
 - **Related automated test:** TC-054 (verify-and-refill guard with a `bug-candidate` annotation when the wipe occurs).
 - **Status:** Open (documented; not reported upstream).
 

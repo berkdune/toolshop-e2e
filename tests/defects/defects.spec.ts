@@ -90,6 +90,12 @@ test.describe('Defect reproductions (expected to fail)', () => {
       await checkout.goto();
       await checkout.proceed1.click();
       await checkout.signInDuringCheckout(user.email, user.password);
+      // The wipe is a race against the lookup's latency; give the response a
+      // realistic delay so the reproduction does not depend on network speed.
+      await page.route('**/postcode-lookup*', async (route) => {
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        await route.continue();
+      });
       await checkout.proceed2.click();
       await expect(checkout.houseNumber).toHaveValue('');
 
