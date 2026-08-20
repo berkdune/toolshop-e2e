@@ -139,15 +139,24 @@ jobs:
             docker compose -f docker-compose.prod.yml logs angular-ui --tail 60; exit 1
           fi
           echo "UI up"
-      # @visual baselines are platform-specific (generated on macOS), so CI skips them
-      - run: npx playwright test --grep-invert "@visual"
-      # Defect reproductions: EXPECTED to fail — the red report is live evidence
-      # of docs/DEFECTS.md, published under /defects/ on the Pages site.
+      # Gating run — its exit code fails the job on real regressions.
+      # (@visual baselines are platform-specific, generated on macOS, so CI skips them.)
+      - name: Full suite (gates the job)
+        run: npx playwright test --grep-invert "@visual" --reporter=blob
+      - if: always()
+        run: mkdir -p all-blobs && mv blob-report/*.zip all-blobs/main.zip
+      # Defect reproductions: EXPECTED to fail — live evidence of docs/DEFECTS.md,
+      # shown in red on the very same published report.
       - name: Defect-reproduction suite (expected to fail)
+        if: always()
         env:
           DEFECTS: '1'
-          PLAYWRIGHT_HTML_REPORT: playwright-report/defects
-        run: npx playwright test --project=defects || true
+        run: npx playwright test --project=defects --reporter=blob || true
+      - name: Merge both runs into a single report
+        if: always()
+        run: |
+          mv blob-report/*.zip all-blobs/defects.zip
+          npx playwright merge-reports --reporter=html ./all-blobs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

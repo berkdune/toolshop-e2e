@@ -3,6 +3,7 @@ test-results/
 playwright-report/
 playwright-report-defects/
 blob-report/
+all-blobs/
 .env
 *.log
 .DS_Store

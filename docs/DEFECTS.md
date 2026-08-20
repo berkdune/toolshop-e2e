@@ -5,7 +5,7 @@ All were observed on the **public deployment** (`practicesoftwaretesting.com`, f
 
 > A fair caveat: the target is Testsmith's intentional practice application, so some of these behaviors may be seeded on purpose. They are reported here exactly as a QA engineer would report them against a real product.
 >
-> **Live evidence:** every defect below also exists as a reproduction test in `tests/defects/` that asserts the *correct* behavior — so it fails against today's app. Run `npm run test:defects` or open the [nightly red report](https://berkdune.github.io/toolshop-e2e/defects/).
+> **Live evidence:** every defect below also exists as a reproduction test in `tests/defects/` that asserts the *correct* behavior — so it fails against today's app. They run nightly and show up as red failures on the [live report](https://berkdune.github.io/toolshop-e2e/) (open the *Failed* filter); locally, `npm run test:defects` reproduces all 8 against the public deployment.
 
 | ID | Title | Severity | Related tests |
 |---|---|---|---|
