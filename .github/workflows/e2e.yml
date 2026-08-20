@@ -146,12 +146,14 @@ jobs:
       - if: always()
         run: mkdir -p all-blobs && mv blob-report/*.zip all-blobs/main.zip
       # Defect reproductions: EXPECTED to fail — live evidence of docs/DEFECTS.md,
-      # shown in red on the very same published report.
+      # shown in red on the very same published report. BUG-003 is skipped here:
+      # the upstream build this job boots no longer exhibits it (fixed after the
+      # deployed v2.4); it still reproduces against the public site.
       - name: Defect-reproduction suite (expected to fail)
         if: always()
         env:
           DEFECTS: '1'
-        run: npx playwright test --project=defects --reporter=blob || true
+        run: npx playwright test --project=defects --grep-invert "BUG-003" --reporter=blob || true
       - name: Merge both runs into a single report
         if: always()
         run: |

@@ -5,7 +5,7 @@ All were observed on the **public deployment** (`practicesoftwaretesting.com`, f
 
 > A fair caveat: the target is Testsmith's intentional practice application, so some of these behaviors may be seeded on purpose. They are reported here exactly as a QA engineer would report them against a real product.
 >
-> **Live evidence:** every defect below also exists as a reproduction test in `tests/defects/` that asserts the *correct* behavior — so it fails against today's app. They run nightly and show up as red failures on the [live report](https://berkdune.github.io/toolshop-e2e/) (open the *Failed* filter); locally, `npm run test:defects` reproduces all 8 against the public deployment.
+> **Live evidence:** every defect below also exists as a reproduction test in `tests/defects/` that asserts the *correct* behavior — so it fails against today's app. Seven of them run nightly and show up as red failures on the [live report](https://berkdune.github.io/toolshop-e2e/) (open the *Failed* filter); BUG-003 is already fixed in the upstream build CI boots, so it is skipped there. Locally, `npm run test:defects` reproduces all 8 against the public deployment.
 
 | ID | Title | Severity | Related tests |
 |---|---|---|---|
@@ -62,9 +62,9 @@ All were observed on the **public deployment** (`practicesoftwaretesting.com`, f
 - **Expected result:** The typed value stays; the Proceed button becomes enabled.
 - **Actual result:** The postcode-lookup request triggered by completing the address resolves asynchronously and **overwrites the form, clearing the house number the user just typed**. The Proceed button flips back to disabled. Intermittent (depends on lookup latency).
 - **Evidence:** Field-state dump captured during automation (value present, then empty with `ng-invalid` after the lookup resolves).
-- **Reproduction note:** the trigger is the lookup's latency, so the repro test injects a realistic response delay via route interception — this makes the wipe deterministic in any environment, including a localhost deployment whose lookup would otherwise resolve before the user finishes typing.
+- **Reproduction note:** the trigger is the lookup's latency, so the repro test injects a realistic response delay via route interception, which makes the wipe deterministic against the deployed frontend. The current upstream build does not exhibit the wipe even with the injected delay, so the nightly hermetic run skips this one repro.
 - **Related automated test:** TC-054 (verify-and-refill guard with a `bug-candidate` annotation when the wipe occurs).
-- **Status:** Open (documented; not reported upstream).
+- **Status:** Open on the deployed v2.4 frontend; fixed in the current upstream build (verified with injected lookup latency, Aug 2026).
 
 ## BUG-004 — Product edit form does not prefill stock and dropdowns
 

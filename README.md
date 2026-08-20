@@ -33,7 +33,7 @@ The project follows a test-case-first QA workflow: the application was explored 
 
 Every finding is written up as a full defect report (severity, repro steps, evidence, linked tests) in [`docs/DEFECTS.md`](docs/DEFECTS.md).
 
-**Want to watch them fail?** Each defect is also encoded as a reproduction test that asserts the behavior the app *should* have — red by design. They run every night and appear **as failures on the [live report](https://berkdune.github.io/toolshop-e2e/) itself** (open the *Failed* filter): the green tests gate the build, the red ones are the evidence. One repro deserves a note: BUG-003 is a race against the postcode lookup's latency, so its test injects a realistic response delay — otherwise a localhost lookup resolves too fast for the wipe to ever happen, and the bug would hide in hermetic CI. Locally, `npm run test:defects` reproduces all 8 against the public deployment.
+**Want to watch them fail?** Each defect is also encoded as a reproduction test that asserts the behavior the app *should* have — red by design. They run every night and appear **as failures on the [live report](https://berkdune.github.io/toolshop-e2e/) itself** (open the *Failed* filter): the green tests gate the build, the red ones are the evidence. Seven repros fail there every night; the eighth, BUG-003, no longer reproduces on the upstream build CI boots — the wipe was fixed after the deployed v2.4 — so the nightly defect step skips it. Against the public deployment, `npm run test:defects` still reproduces all 8 (the BUG-003 repro injects lookup latency to make the race deterministic).
 
 ## Quick start
 
