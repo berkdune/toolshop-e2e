@@ -141,6 +141,13 @@ jobs:
           echo "UI up"
       # @visual baselines are platform-specific (generated on macOS), so CI skips them
       - run: npx playwright test --grep-invert "@visual"
+      # Defect reproductions: EXPECTED to fail — the red report is live evidence
+      # of docs/DEFECTS.md, published under /defects/ on the Pages site.
+      - name: Defect-reproduction suite (expected to fail)
+        env:
+          DEFECTS: '1'
+          PLAYWRIGHT_HTML_REPORT: playwright-report/defects
+        run: npx playwright test --project=defects || true
       - uses: actions/upload-artifact@v4
         if: always()
         with:

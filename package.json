@@ -8,6 +8,7 @@
     "test:smoke": "playwright test --grep @smoke",
     "test:ui": "playwright test --project=chromium",
     "test:api": "playwright test --project=api",
+    "test:defects": "DEFECTS=1 PLAYWRIGHT_HTML_REPORT=playwright-report-defects playwright test --project=defects",
     "cases:lint": "node scripts/validate-cases.js",
     "report": "playwright show-report"
   },

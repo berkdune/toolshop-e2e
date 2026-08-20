@@ -33,6 +33,8 @@ The project follows a test-case-first QA workflow: the application was explored 
 
 Every finding is written up as a full defect report (severity, repro steps, evidence, linked tests) in [`docs/DEFECTS.md`](docs/DEFECTS.md).
 
+**Want to watch them fail?** Each defect is also encoded as a reproduction test that asserts the behavior the app *should* have — so the suite is red by design: run `npm run test:defects`, or open the nightly [live defect report](https://berkdune.github.io/toolshop-e2e/defects/) (8 failing tests, one per bug). The gating suite stays green; the red suite is the evidence.
+
 ## Quick start
 
 ```bash
@@ -46,6 +48,7 @@ npm test               # full suite (~4 min)
 | `npm test` | Full suite: UI (chromium) + API projects |
 | `npm run test:smoke` | 14 critical-path smoke tests (~20 s) |
 | `npm run test:ui` / `test:api` | One project only |
+| `npm run test:defects` | Defect-reproduction suite — **fails by design**, one red test per documented bug |
 | `npm run cases:lint` | Validates the 128-case CSV suite and regenerates `TRACEABILITY.md` |
 | `npm run report` | Opens the last HTML report |
 
@@ -66,7 +69,8 @@ No configuration needed — defaults target the public demo. Override via `.env`
 │   └── utils/                # data factory, session injection, money parsing
 ├── tests/
 │   ├── ui/                   # 103 UI tests across 9 modules (incl. axe a11y + visual examples)
-│   └── api/                  # 25 API contract tests
+│   ├── api/                  # 25 API contract tests
+│   └── defects/              # 8 red-by-design defect reproductions (BUG-001..008)
 └── .github/workflows/e2e.yml # smoke on push · full nightly + report to Pages
 ```
 

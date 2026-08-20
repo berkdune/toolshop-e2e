@@ -4,6 +4,8 @@ Structured write-ups of the defects found while building and automating the suit
 All were observed on the **public deployment** (`practicesoftwaretesting.com`, frontend v2.4 / API v5.0.0, August 2026) unless noted otherwise.
 
 > A fair caveat: the target is Testsmith's intentional practice application, so some of these behaviors may be seeded on purpose. They are reported here exactly as a QA engineer would report them against a real product.
+>
+> **Live evidence:** every defect below also exists as a reproduction test in `tests/defects/` that asserts the *correct* behavior — so it fails against today's app. Run `npm run test:defects` or open the [nightly red report](https://berkdune.github.io/toolshop-e2e/defects/).
 
 | ID | Title | Severity | Related tests |
 |---|---|---|---|

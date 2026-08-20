@@ -34,5 +34,22 @@ export default defineConfig({
       },
     },
     { name: 'api', testDir: './tests/api' },
+    // Defect-reproduction suite: EXPECTED to fail (asserts the behavior the app
+    // should have). Env-gated so the default run and CI gates stay green;
+    // run it with `npm run test:defects`.
+    ...(process.env.DEFECTS
+      ? [
+          {
+            name: 'defects',
+            testDir: './tests/defects',
+            retries: 0,
+            use: {
+              ...devices['Desktop Chrome'],
+              userAgent: appConfig.browserUA,
+              locale: 'en-US',
+            },
+          },
+        ]
+      : []),
   ],
 });
